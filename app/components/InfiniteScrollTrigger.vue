@@ -6,6 +6,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ load: [] }>()
+const { t } = useI18n()
 const trigger = useTemplateRef<HTMLElement>('trigger')
 let observer: IntersectionObserver | undefined
 let requestPending = false
@@ -50,7 +51,7 @@ onBeforeUnmount(() => observer?.disconnect())
 
 <template>
   <div v-if="hasMore || loading" ref="trigger" class="infinite-scroll-trigger" aria-live="polite">
-    {{ loading ? (label || '正在加载更多…') : '' }}
+    {{ loading ? (label || t('common.loadingMore')) : '' }}
   </div>
-  <div v-else class="infinite-scroll-end">已经到底了</div>
+  <div v-else class="infinite-scroll-end">{{ t('common.end') }}</div>
 </template>

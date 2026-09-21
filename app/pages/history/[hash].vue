@@ -9,19 +9,20 @@ interface DiffSection {
 const route = useRoute()
 const config = useRuntimeConfig()
 const hash = computed(() => String(route.params.hash || ''))
+const { t, intlLocale } = useI18n()
 
 const { data: detail, status, error, refresh } = await useFetch<NoteHistoryDetail>(() => `/api/history/${hash.value}`)
 
 useHead(() => ({
-  title: detail.value ? `${detail.value.subject} · ${config.public.appName}` : `更新详情 · ${config.public.appName}`,
+  title: detail.value ? `${detail.value.subject} · ${config.public.appName}` : `${t('detail.pageTitle')} · ${config.public.appName}`,
 }))
 
-const changeLabels = {
-  added: '新增',
-  modified: '修改',
-  deleted: '删除',
-  renamed: '重命名',
-} as const
+const changeLabels = computed(() => ({
+  added: t('history.added'),
+  modified: t('history.modified'),
+  deleted: t('history.deleted'),
+  renamed: t('history.renamed'),
+}))
 
 const diffSections = computed<DiffSection[]>(() => {
   if (!detail.value?.patch) return []
@@ -41,7 +42,7 @@ const diffSections = computed<DiffSection[]>(() => {
 })
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(intlLocale.value, {
     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
   }).format(new Date(value))
 }
@@ -61,25 +62,26 @@ function lineType(line: string): string {
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
+        <LanguageToggle />
         <ThemeToggle />
-        <NuxtLink to="/history" class="secondary-button header-action-button">返回更新历史</NuxtLink>
+        <NuxtLink to="/history" class="secondary-button header-action-button">{{ t('detail.back') }}</NuxtLink>
       </div>
     </header>
 
     <main class="history-detail-page">
-      <div v-if="status === 'pending'" class="page-message">正在读取详细更改…</div>
+      <div v-if="status === 'pending'" class="page-message">{{ t('detail.loading') }}</div>
       <div v-else-if="error || !detail" class="page-message error-message">
-        <p>没有找到这条更新记录，或记录中不包含笔记更改。</p>
-        <button class="secondary-button" @click="() => refresh()">重试</button>
+        <p>{{ t('detail.notFound') }}</p>
+        <button class="secondary-button" @click="() => refresh()">{{ t('common.retry') }}</button>
       </div>
       <template v-else>
         <section class="commit-summary">
           <div class="commit-summary-topline">
-            <p class="eyebrow">Commit detail</p>
+            <p class="eyebrow">{{ t('detail.eyebrow') }}</p>
             <code>{{ detail.shortHash }}</code>
           </div>
           <h1>{{ detail.subject }}</h1>
-          <p>{{ detail.author }} 提交于 {{ formatDate(detail.committedAt) }}</p>
+          <p>{{ t('detail.committedBy', { author: detail.author, date: formatDate(detail.committedAt) }) }}</p>
           <div class="commit-change-summary">
             <div v-for="change in detail.changes" :key="`${change.type}-${change.path}`" class="commit-change-item">
               <span class="change-badge" :data-type="change.type">{{ changeLabels[change.type] }}</span>
@@ -90,10 +92,10 @@ function lineType(line: string): string {
 
         <section class="diff-section-heading">
           <div>
-            <h2>详细更改</h2>
-            <p>绿色表示新增内容，红色表示删除内容。</p>
+            <h2>{{ t('detail.title') }}</h2>
+            <p>{{ t('detail.description') }}</p>
           </div>
-          <span>{{ detail.changes.length }} 个文件</span>
+          <span>{{ t('detail.files', { count: detail.changes.length }) }}</span>
         </section>
 
         <div v-if="diffSections.length" class="diff-list">
@@ -108,7 +110,7 @@ function lineType(line: string): string {
 </span></code></pre>
           </article>
         </div>
-        <div v-else class="empty-diff">这条提交没有可显示的文本差异。</div>
+        <div v-else class="empty-diff">{{ t('detail.emptyDiff') }}</div>
       </template>
     </main>
   </div>

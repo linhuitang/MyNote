@@ -10,6 +10,8 @@ const emit = defineEmits<{
   close: []
   confirm: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -19,16 +21,16 @@ const emit = defineEmits<{
         <section class="new-note-dialog delete-note-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-note-title">
           <div class="dialog-icon danger-icon" aria-hidden="true">×</div>
           <div class="dialog-heading">
-            <h2 id="delete-note-title">删除这篇笔记？</h2>
-            <p>“{{ title }}”及其专属图片资源将从笔记目录中删除，并提交一条 Git 删除记录。之后仍可通过 Git 历史恢复。</p>
+            <h2 id="delete-note-title">{{ t('delete.title') }}</h2>
+            <p>{{ t('delete.description', { title }) }}</p>
           </div>
 
           <p v-if="error" class="dialog-error">{{ error }}</p>
 
           <div class="dialog-actions">
-            <button type="button" class="secondary-button" :disabled="loading" @click="emit('close')">取消</button>
+            <button type="button" class="secondary-button" :disabled="loading" @click="emit('close')">{{ t('common.cancel') }}</button>
             <button type="button" class="danger-button" :disabled="loading" @click="emit('confirm')">
-              {{ loading ? '正在删除…' : '确认删除' }}
+              {{ loading ? t('delete.deleting') : t('delete.confirm') }}
             </button>
           </div>
         </section>

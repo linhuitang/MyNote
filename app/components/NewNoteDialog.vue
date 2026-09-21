@@ -7,6 +7,7 @@ const emit = defineEmits<{
 
 const title = ref('')
 const titleInput = useTemplateRef<HTMLInputElement>('titleInput')
+const { t } = useI18n()
 
 const suggestedFilename = computed(() => {
   const slug = title.value
@@ -15,7 +16,7 @@ const suggestedFilename = computed(() => {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
-  return `${slug || '未命名笔记'}.md`
+  return `${slug || t('new.untitled')}.md`
 })
 
 watch(() => props.open, async (open) => {
@@ -46,12 +47,12 @@ function submit(): void {
         <section class="new-note-dialog" role="dialog" aria-modal="true" aria-labelledby="new-note-title">
           <!-- <div class="dialog-icon" aria-hidden="true">+</div> -->
           <div class="dialog-heading">
-            <h2 id="new-note-title">新建笔记</h2>
-            <p>输入标题后进入编辑页面，笔记在点击保存前不会写入磁盘。</p>
+            <h2 id="new-note-title">{{ t('new.title') }}</h2>
+            <p>{{ t('new.description') }}</p>
           </div>
 
           <form @submit.prevent="submit">
-            <label class="field-label" for="note-title-input">笔记标题</label>
+            <label class="field-label" for="note-title-input">{{ t('new.noteTitle') }}</label>
             <input
               id="note-title-input"
               ref="titleInput"
@@ -60,16 +61,16 @@ function submit(): void {
               type="text"
               maxlength="120"
               autocomplete="off"
-              placeholder="例如：下周工作计划"
+              :placeholder="t('new.placeholder')"
             >
             <p class="filename-preview">
-              <span>文件名</span>
+              <span>{{ t('new.filename') }}</span>
               <code>{{ suggestedFilename }}</code>
             </p>
 
             <div class="dialog-actions">
-              <button type="button" class="secondary-button" @click="close">取消</button>
-              <button type="submit" class="primary-button" :disabled="!title.trim()">创建并编辑</button>
+              <button type="button" class="secondary-button" @click="close">{{ t('common.cancel') }}</button>
+              <button type="submit" class="primary-button" :disabled="!title.trim()">{{ t('new.create') }}</button>
             </div>
           </form>
         </section>

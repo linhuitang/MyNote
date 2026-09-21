@@ -68,6 +68,7 @@ Open `http://localhost:3000` and create your first note. No database or schema i
 | Separate reading and editing modes | YAML Frontmatter tags and tag filters |
 | Toolbar for common Markdown syntax | Infinite loading in batches of 12 notes |
 | Responsive desktop and mobile layouts | Delete confirmation and related-image cleanup |
+| English UI by default with a Chinese language switch | Language preference saved in the browser |
 | Light, dark, and system themes | External edit conflict detection |
 | File picker, screenshot paste, and drag-and-drop image upload | Standard relative Markdown image paths |
 

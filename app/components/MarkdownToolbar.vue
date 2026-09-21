@@ -5,25 +5,26 @@ const emit = defineEmits<{
   command: [command: MarkdownCommand]
 }>()
 
-const tools: Array<{ command: MarkdownCommand, label: string, title: string, style?: string }> = [
-  { command: 'heading-one', label: 'H1', title: '一级标题' },
-  { command: 'heading-two', label: 'H2', title: '二级标题' },
-  { command: 'bold', label: 'B', title: '粗体', style: 'font-weight: 800' },
-  { command: 'italic', label: 'I', title: '斜体', style: 'font-style: italic' },
-  { command: 'strike', label: 'S', title: '删除线', style: 'text-decoration: line-through' },
-  { command: 'link', label: '链接', title: '插入链接' },
-  { command: 'quote', label: '引用', title: '引用段落' },
-  { command: 'bullet-list', label: '• 列表', title: '无序列表' },
-  { command: 'numbered-list', label: '1. 列表', title: '有序列表' },
-  { command: 'task-list', label: '☐ 任务', title: '任务列表' },
-  { command: 'image', label: '图片', title: '插入图片' },
-  { command: 'inline-code', label: '</>', title: '行内代码' },
-  { command: 'code-block', label: '{ }', title: '代码块' },
-]
+const { t } = useI18n()
+const tools = computed<Array<{ command: MarkdownCommand, label: string, title: string, style?: string }>>(() => [
+  { command: 'heading-one', label: 'H1', title: t('toolbar.headingOne') },
+  { command: 'heading-two', label: 'H2', title: t('toolbar.headingTwo') },
+  { command: 'bold', label: 'B', title: t('toolbar.bold'), style: 'font-weight: 800' },
+  { command: 'italic', label: 'I', title: t('toolbar.italic'), style: 'font-style: italic' },
+  { command: 'strike', label: 'S', title: t('toolbar.strike'), style: 'text-decoration: line-through' },
+  { command: 'link', label: t('toolbar.link'), title: t('toolbar.insertLink') },
+  { command: 'quote', label: t('toolbar.quote'), title: t('toolbar.quoteTitle') },
+  { command: 'bullet-list', label: t('toolbar.bulletList'), title: t('toolbar.bulletListTitle') },
+  { command: 'numbered-list', label: t('toolbar.numberedList'), title: t('toolbar.numberedListTitle') },
+  { command: 'task-list', label: t('toolbar.taskList'), title: t('toolbar.taskListTitle') },
+  { command: 'image', label: t('toolbar.image'), title: t('toolbar.imageTitle') },
+  { command: 'inline-code', label: '</>', title: t('toolbar.inlineCode') },
+  { command: 'code-block', label: '{ }', title: t('toolbar.codeBlock') },
+])
 </script>
 
 <template>
-  <div class="markdown-toolbar" role="toolbar" aria-label="Markdown 格式工具">
+  <div class="markdown-toolbar" role="toolbar" :aria-label="t('toolbar.label')">
     <button
       v-for="tool in tools"
       :key="tool.command"

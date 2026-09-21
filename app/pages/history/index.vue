@@ -2,7 +2,8 @@
 import type { NoteHistoryChange, NoteHistoryEntry, PaginatedResult } from '~~/shared/types/note'
 
 const config = useRuntimeConfig()
-useHead({ title: `更新历史 · ${config.public.appName}` })
+const { t, intlLocale } = useI18n()
+useHead(() => ({ title: `${t('history.pageTitle')} · ${config.public.appName}` }))
 
 const history = ref<NoteHistoryEntry[]>([])
 const currentPage = ref(1)
@@ -63,19 +64,19 @@ async function loadMoreHistory(): Promise<void> {
   }
 }
 
-const changeLabels = {
-  added: '新增',
-  modified: '修改',
-  deleted: '删除',
-  renamed: '重命名',
-} as const
+const changeLabels = computed(() => ({
+  added: t('history.added'),
+  modified: t('history.modified'),
+  deleted: t('history.deleted'),
+  renamed: t('history.renamed'),
+}))
 
 function detailUrl(path: string): string {
   return `/notes/${path.split('/').map(encodeURIComponent).join('/')}`
 }
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(intlLocale.value, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -96,35 +97,36 @@ await resetHistory()
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
+        <LanguageToggle />
         <ThemeToggle />
-        <NuxtLink to="/" class="secondary-button header-action-button">返回笔记</NuxtLink>
+        <NuxtLink to="/" class="secondary-button header-action-button">{{ t('history.back') }}</NuxtLink>
       </div>
     </header>
 
     <main class="history-page">
       <div class="history-heading">
         <div>
-          <p class="eyebrow">Git history</p>
-          <h1>笔记更新历史</h1>
-          <p>这里记录通过 Git 保存的新增、修改、重命名和删除操作。</p>
+          <p class="eyebrow">{{ t('history.eyebrow') }}</p>
+          <h1>{{ t('history.title') }}</h1>
+          <p>{{ t('history.description') }}</p>
         </div>
-        <span class="history-count">{{ totalHistory }} 次更新</span>
+        <span class="history-count">{{ t('history.count', { count: totalHistory }) }}</span>
       </div>
 
-      <div v-if="loading" class="page-message">正在读取 Git 历史…</div>
+      <div v-if="loading" class="page-message">{{ t('history.loading') }}</div>
       <div v-else-if="loadError" class="page-message error-message">
-        <p>读取更新历史失败。</p>
-        <button class="secondary-button" @click="resetHistory">重试</button>
+        <p>{{ t('history.loadFailed') }}</p>
+        <button class="secondary-button" @click="resetHistory">{{ t('common.retry') }}</button>
       </div>
       <template v-else-if="history.length">
-        <section class="history-list" aria-label="笔记更新历史">
+        <section class="history-list" :aria-label="t('history.list')">
           <article v-for="entry in history" :key="entry.hash" class="history-card">
             <div class="history-card-meta">
               <time :datetime="entry.committedAt">{{ formatDate(entry.committedAt) }}</time>
               <code>{{ entry.shortHash }}</code>
             </div>
             <h2>{{ entry.subject }}</h2>
-            <p class="history-author">由 {{ entry.author }} 提交</p>
+            <p class="history-author">{{ t('history.byAuthor', { author: entry.author }) }}</p>
 
             <div class="change-list">
               <component
@@ -143,27 +145,27 @@ await resetHistory()
               </component>
             </div>
             <NuxtLink :to="`/history/${entry.hash}`" class="history-detail-link">
-              查看详细更改 <span aria-hidden="true">→</span>
+              {{ t('history.details') }} <span aria-hidden="true">→</span>
             </NuxtLink>
           </article>
         </section>
         <div v-if="loadMoreError" class="load-more-error">
-          <span>加载更多历史失败</span>
-          <button type="button" @click="loadMoreHistory">重试</button>
+          <span>{{ t('history.loadMoreFailed') }}</span>
+          <button type="button" @click="loadMoreHistory">{{ t('common.retry') }}</button>
         </div>
         <InfiniteScrollTrigger
           v-else
           :has-more="hasMoreHistory"
           :loading="loadingMore"
-          label="正在加载更多历史…"
+          :label="t('history.loadingMore')"
           @load="loadMoreHistory"
         />
       </template>
       <section v-else class="empty-library history-empty">
         <div class="welcome-mark">G</div>
-        <h2>还没有更新记录</h2>
-        <p>保存或删除一篇笔记后，Git 提交记录会显示在这里。</p>
-        <NuxtLink to="/" class="primary-button">返回笔记列表</NuxtLink>
+        <h2>{{ t('history.empty') }}</h2>
+        <p>{{ t('history.emptyDescription') }}</p>
+        <NuxtLink to="/" class="primary-button">{{ t('history.backToList') }}</NuxtLink>
       </section>
     </main>
   </div>

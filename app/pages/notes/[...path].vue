@@ -6,6 +6,7 @@ import { setMarkdownTags, tagsFromMarkdown } from '~~/shared/utils/markdown-meta
 const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
+const { t, intlLocale } = useI18n()
 const note = ref<NoteDocument | null>(null)
 const content = ref('')
 const savedContent = ref('')
@@ -29,7 +30,7 @@ const notePath = computed(() => {
 })
 const apiUrl = computed(() => `/api/notes/${notePath.value.split('/').map(encodeURIComponent).join('/')}`)
 const isDirty = computed(() => content.value !== savedContent.value)
-const title = computed(() => content.value.match(/^\s*#\s+(.+)$/m)?.[1]?.trim() || note.value?.title || '未命名笔记')
+const title = computed(() => content.value.match(/^\s*#\s+(.+)$/m)?.[1]?.trim() || note.value?.title || t('editor.untitled'))
 const tags = computed(() => tagsFromMarkdown(content.value))
 
 const { data: noteHistory, status: historyStatus, refresh: refreshHistory } = await useFetch<NoteHistoryEntry[]>('/api/note-history', {
@@ -44,7 +45,7 @@ async function loadNote(): Promise<void> {
   statusMessage.value = ''
   try {
     if (route.query.new === '1') {
-      const newTitle = typeof route.query.title === 'string' ? route.query.title : '未命名笔记'
+      const newTitle = typeof route.query.title === 'string' ? route.query.title : t('editor.untitled')
       note.value = {
         path: notePath.value,
         title: newTitle,
@@ -56,7 +57,7 @@ async function loadNote(): Promise<void> {
       }
       content.value = `# ${newTitle}\n\n`
       savedContent.value = ''
-      statusMessage.value = '新笔记尚未保存'
+      statusMessage.value = t('editor.newUnsaved')
       statusTone.value = 'warning'
       return
     }
@@ -68,9 +69,9 @@ async function loadNote(): Promise<void> {
   }
   catch (error: any) {
     if (error?.statusCode === 404 || error?.response?.status === 404) {
-      throw createError({ statusCode: 404, statusMessage: '笔记不存在' })
+      throw createError({ statusCode: 404, statusMessage: t('editor.notFound') })
     }
-    statusMessage.value = error?.data?.statusMessage || error?.message || '读取笔记失败'
+    statusMessage.value = t('editor.loadFailed')
     statusTone.value = 'error'
   }
   finally {
@@ -81,7 +82,7 @@ async function loadNote(): Promise<void> {
 async function save(): Promise<void> {
   if (!note.value || saving.value || uploadingImages.value || !isDirty.value) return
   saving.value = true
-  statusMessage.value = '正在保存并同步…'
+  statusMessage.value = t('editor.saving')
   statusTone.value = 'neutral'
   try {
     const result = await $fetch<SaveNoteResult>(apiUrl.value, {
@@ -92,7 +93,7 @@ async function save(): Promise<void> {
     content.value = result.note.content
     savedContent.value = result.note.content
     await discardTemporaryUploads()
-    statusMessage.value = result.git.message
+    statusMessage.value = t(`git.${result.git.state}`)
     statusTone.value = result.git.state === 'synced' || result.git.state === 'committed' || result.git.state === 'unchanged'
       ? 'success'
       : result.git.state === 'failed' ? 'error' : 'warning'
@@ -102,8 +103,8 @@ async function save(): Promise<void> {
   }
   catch (error: any) {
     statusMessage.value = error?.statusCode === 409 || error?.response?.status === 409
-      ? '磁盘上的文件已发生变化。请重新载入，避免覆盖外部编辑内容。'
-      : error?.data?.statusMessage || error?.message || '保存失败'
+      ? t('editor.conflict')
+      : t('editor.saveFailed')
     statusTone.value = 'error'
   }
   finally {
@@ -113,7 +114,7 @@ async function save(): Promise<void> {
 
 async function goBack(): Promise<void> {
   if (uploadingImages.value) return
-  if (isDirty.value && !window.confirm('当前笔记尚未保存，确定返回笔记列表吗？')) return
+  if (isDirty.value && !window.confirm(t('editor.backConfirm'))) return
   await discardTemporaryUploads()
   savedContent.value = content.value
   await navigateTo('/')
@@ -151,7 +152,7 @@ async function confirmDelete(): Promise<void> {
     })
   }
   catch (error: any) {
-    deleteError.value = error?.data?.statusMessage || error?.message || '删除失败，请稍后重试'
+    deleteError.value = t('delete.failed')
   }
   finally {
     deleting.value = false
@@ -160,7 +161,7 @@ async function confirmDelete(): Promise<void> {
 
 async function cancelEditing(): Promise<void> {
   if (uploadingImages.value) return
-  if (isDirty.value && !window.confirm('确定放弃当前未保存的修改吗？')) return
+  if (isDirty.value && !window.confirm(t('editor.discardConfirm'))) return
 
   await discardTemporaryUploads()
 
@@ -181,7 +182,7 @@ function handleBeforeUnload(event: BeforeUnloadEvent): void {
 }
 
 function formatHistoryDate(value: string): string {
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(intlLocale.value, {
     year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   }).format(new Date(value))
 }
@@ -195,7 +196,7 @@ async function discardTemporaryUploads(): Promise<void> {
 }
 
 function imageAltText(file: File): string {
-  return file.name.replace(/\.[^.]+$/, '').replace(/[\[\]]/g, '').trim() || '图片'
+  return file.name.replace(/\.[^.]+$/, '').replace(/[\[\]]/g, '').trim() || t('editor.image')
 }
 
 async function uploadImages(files: File[]): Promise<void> {
@@ -203,7 +204,7 @@ async function uploadImages(files: File[]): Promise<void> {
   if (!images.length || uploadingImages.value) return
 
   uploadingImages.value = true
-  statusMessage.value = images.length > 1 ? `正在上传 ${images.length} 张图片…` : '正在上传图片…'
+  statusMessage.value = images.length > 1 ? t('editor.uploadingMany', { count: images.length }) : t('editor.uploadingOne')
   statusTone.value = 'neutral'
 
   try {
@@ -223,11 +224,11 @@ async function uploadImages(files: File[]): Promise<void> {
       await setEditorContent(markdown, markdown.length, markdown.length)
     }
 
-    statusMessage.value = '图片已插入，保存笔记后同步到 Git'
+    statusMessage.value = t('editor.imageInserted')
     statusTone.value = 'warning'
   }
   catch (error: any) {
-    statusMessage.value = error?.data?.statusMessage || error?.message || '图片上传失败'
+    statusMessage.value = t('editor.imageUploadFailed')
     statusTone.value = 'error'
   }
   finally {
@@ -320,13 +321,13 @@ async function applyMarkdownCommand(command: MarkdownCommand): Promise<void> {
   switch (command) {
     case 'heading-one': return applyHeading(1)
     case 'heading-two': return applyHeading(2)
-    case 'bold': return wrapSelection('**', '**', '粗体文字')
-    case 'italic': return wrapSelection('*', '*', '斜体文字')
-    case 'strike': return wrapSelection('~~', '~~', '删除文字')
-    case 'inline-code': return wrapSelection('`', '`', '代码')
+    case 'bold': return wrapSelection('**', '**', t('editor.placeholderBold'))
+    case 'italic': return wrapSelection('*', '*', t('editor.placeholderItalic'))
+    case 'strike': return wrapSelection('~~', '~~', t('editor.placeholderStrike'))
+    case 'inline-code': return wrapSelection('`', '`', t('editor.placeholderCode'))
     case 'link': {
       const editor = markdownEditor.value
-      const selected = content.value.slice(editor.selectionStart, editor.selectionEnd) || '链接文字'
+      const selected = content.value.slice(editor.selectionStart, editor.selectionEnd) || t('editor.placeholderLink')
       const replacement = `[${selected}](https://)`
       return setEditorContent(replacement, selected.length + 3, selected.length + 11)
     }
@@ -334,7 +335,7 @@ async function applyMarkdownCommand(command: MarkdownCommand): Promise<void> {
     case 'bullet-list': return prefixSelectedLines('- ')
     case 'numbered-list': return prefixSelectedLines(index => `${index + 1}. `)
     case 'task-list': return prefixSelectedLines('- [ ] ')
-    case 'code-block': return wrapSelection('```\n', '\n```', '在这里输入代码')
+    case 'code-block': return wrapSelection('```\n', '\n```', t('editor.placeholderCodeBlock'))
     case 'image': imageInput.value?.click(); return
   }
 }
@@ -342,7 +343,7 @@ async function applyMarkdownCommand(command: MarkdownCommand): Promise<void> {
 onBeforeRouteLeave(() => {
   if (uploadingImages.value) return false
   if (!isDirty.value) return true
-  const leave = window.confirm('当前笔记尚未保存，确定离开吗？')
+  const leave = window.confirm(t('editor.leaveConfirm'))
   if (leave) {
     void discardTemporaryUploads()
     savedContent.value = content.value
@@ -359,32 +360,33 @@ await loadNote()
   <div class="detail-shell">
     <header class="topbar detail-topbar">
       <div class="detail-navigation">
-        <button class="back-button" aria-label="返回笔记列表" @click="goBack">←</button>
+        <button class="back-button" :aria-label="t('editor.back')" @click="goBack">←</button>
         <AppBrand />
       </div>
       <div class="save-group">
+        <LanguageToggle />
         <ThemeToggle />
         <template v-if="editing">
           <span v-if="statusMessage" class="sync-status" :data-tone="statusTone">{{ statusMessage }}</span>
-          <span v-else-if="isDirty" class="sync-status" data-tone="warning">尚未保存</span>
-          <button class="secondary-button header-action-button" :disabled="saving || uploadingImages" @click="cancelEditing">取消</button>
+          <span v-else-if="isDirty" class="sync-status" data-tone="warning">{{ t('editor.unsaved') }}</span>
+          <button class="secondary-button header-action-button" :disabled="saving || uploadingImages" @click="cancelEditing">{{ t('editor.cancel') }}</button>
           <button class="primary-button header-action-button" :disabled="!note || !isDirty || saving || uploadingImages" @click="save">
-            {{ uploadingImages ? '上传中…' : saving ? '保存中…' : '保存并同步' }}
+            {{ uploadingImages ? t('editor.uploading') : saving ? t('editor.saving') : t('editor.saveButton') }}
           </button>
         </template>
         <template v-else>
-          <button class="danger-text-button header-action-button" @click="openDeleteDialog">删除</button>
-          <button class="primary-button header-action-button" @click="startEditing">编辑</button>
+          <button class="danger-text-button header-action-button" @click="openDeleteDialog">{{ t('editor.delete') }}</button>
+          <button class="primary-button header-action-button" @click="startEditing">{{ t('editor.edit') }}</button>
         </template>
       </div>
     </header>
 
-    <main v-if="loading" class="page-message detail-loading">正在读取笔记…</main>
+    <main v-if="loading" class="page-message detail-loading">{{ t('editor.loading') }}</main>
     <main v-else-if="note" class="detail-page">
       <template v-if="editing">
         <div class="view-switcher mobile-only">
-          <button :class="{ active: mobileView === 'edit' }" @click="mobileView = 'edit'">编辑</button>
-          <button :class="{ active: mobileView === 'preview' }" @click="mobileView = 'preview'">预览</button>
+          <button :class="{ active: mobileView === 'edit' }" @click="mobileView = 'edit'">{{ t('editor.edit') }}</button>
+          <button :class="{ active: mobileView === 'preview' }" @click="mobileView = 'preview'">{{ t('editor.preview') }}</button>
         </div>
         <NoteTagEditor :tags="tags" @change="updateTags" />
         <div class="editor-grid">
@@ -397,9 +399,9 @@ await loadNote()
               ref="markdownEditor"
               v-model="content"
               class="markdown-editor"
-              aria-label="Markdown 编辑器"
+              :aria-label="t('editor.aria')"
               spellcheck="false"
-              placeholder="# 开始写作"
+              :placeholder="t('editor.placeholder')"
               @paste="handleEditorPaste"
               @dragover.prevent
               @drop.prevent="handleEditorDrop"
@@ -414,26 +416,26 @@ await loadNote()
             >
           </section>
           <section class="preview-pane" :class="{ 'mobile-hidden': mobileView !== 'preview' }">
-            <div class="pane-label">预览</div>
+            <div class="pane-label">{{ t('editor.preview') }}</div>
             <MarkdownPreview :content="content" :note-path="notePath" />
           </section>
         </div>
       </template>
       <section v-else class="reader-page">
-        <div v-if="tags.length" class="reader-tags" aria-label="笔记标签">
+        <div v-if="tags.length" class="reader-tags" :aria-label="t('editor.noteTags')">
           <span v-for="tag in tags" :key="tag" class="note-tag">{{ tag }}</span>
         </div>
         <MarkdownPreview :content="content" :note-path="notePath" />
         <section class="note-history-section">
           <div class="note-history-heading">
             <div>
-              <h2>更新历史</h2>
-              <p>这篇笔记在 Git 中的保存记录。</p>
+              <h2>{{ t('editor.history') }}</h2>
+              <p>{{ t('editor.historyDescription') }}</p>
             </div>
-            <NuxtLink to="/history" class="history-all-link">查看全部</NuxtLink>
+            <NuxtLink to="/history" class="history-all-link">{{ t('editor.viewAll') }}</NuxtLink>
           </div>
 
-          <div v-if="historyStatus === 'pending'" class="note-history-message">正在读取更新历史…</div>
+          <div v-if="historyStatus === 'pending'" class="note-history-message">{{ t('editor.historyLoading') }}</div>
           <div v-else-if="noteHistory.length" class="note-history-list">
             <NuxtLink
               v-for="entry in noteHistory"
@@ -451,7 +453,7 @@ await loadNote()
               </div>
             </NuxtLink>
           </div>
-          <div v-else class="note-history-message">这篇笔记还没有 Git 更新记录。</div>
+          <div v-else class="note-history-message">{{ t('editor.noHistory') }}</div>
         </section>
       </section>
     </main>

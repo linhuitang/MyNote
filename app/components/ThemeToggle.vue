@@ -2,16 +2,17 @@
 import type { ThemePreference } from '~/composables/useTheme'
 
 const { preference, resolvedTheme, setTheme } = useTheme()
+const { t } = useI18n()
 const open = ref(false)
 const root = useTemplateRef<HTMLElement>('themeControl')
 
-const options: Array<{ value: ThemePreference, label: string, icon: string }> = [
-  { value: 'light', label: '浅色', icon: '☀' },
-  { value: 'dark', label: '深色', icon: '☾' },
-  { value: 'system', label: '跟随系统', icon: '◐' },
-]
+const options = computed<Array<{ value: ThemePreference, label: string, icon: string }>>(() => [
+  { value: 'light', label: t('theme.light'), icon: '☀' },
+  { value: 'dark', label: t('theme.dark'), icon: '☾' },
+  { value: 'system', label: t('theme.system'), icon: '◐' },
+])
 
-const currentLabel = computed(() => options.find(option => option.value === preference.value)?.label || '主题')
+const currentLabel = computed(() => options.value.find(option => option.value === preference.value)?.label || t('theme.label'))
 
 function chooseTheme(value: ThemePreference): void {
   setTheme(value)
@@ -44,18 +45,18 @@ onBeforeUnmount(() => {
       class="theme-toggle"
       aria-haspopup="menu"
       :aria-expanded="open"
-      :aria-label="`切换主题，当前为${currentLabel}`"
-      :title="`主题：${currentLabel}`"
+      :aria-label="t('theme.switch', { theme: currentLabel })"
+      :title="t('theme.current', { theme: currentLabel })"
       @click="open = !open"
     >
       <span class="theme-toggle-icon" aria-hidden="true">{{ resolvedTheme === 'dark' ? '☾' : '☀' }}</span>
-      <span class="theme-toggle-label">主题</span>
+      <span class="theme-toggle-label">{{ t('theme.label') }}</span>
       <svg class="theme-toggle-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </button>
     <Transition name="theme-menu">
-      <div v-if="open" class="theme-menu" role="menu" aria-label="选择页面主题">
+      <div v-if="open" class="theme-menu" role="menu" :aria-label="t('theme.menu')">
         <button
           v-for="option in options"
           :key="option.value"

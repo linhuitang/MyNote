@@ -4,6 +4,7 @@ import type { NoteSummary, NotesPage } from '~~/shared/types/note'
 const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
+const { t, intlLocale } = useI18n()
 useHead({ title: config.public.appName })
 
 const searchQuery = ref('')
@@ -25,7 +26,7 @@ let requestVersion = 0
 const availableTags = computed(() => {
   const tags = new Map(serverTags.value.map(tag => [tag.toLocaleLowerCase(), tag]))
   if (selectedTag.value) tags.set(selectedTag.value.toLocaleLowerCase(), selectedTag.value)
-  return [...tags.values()].sort((a, b) => a.localeCompare(b, 'zh-CN'))
+  return [...tags.values()].sort((a, b) => a.localeCompare(b, intlLocale.value))
 })
 
 async function fetchNotesPage(page: number): Promise<NotesPage> {
@@ -107,8 +108,8 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 const deletionNotice = computed(() => {
   if (typeof route.query.deleted !== 'string') return ''
   return route.query.sync === 'failed'
-    ? `“${route.query.deleted}”已删除，但 Git 推送失败。`
-    : `“${route.query.deleted}”已删除。`
+    ? t('home.deletedPushFailed', { title: route.query.deleted })
+    : t('home.deleted', { title: route.query.deleted })
 })
 
 async function dismissDeletionNotice(): Promise<void> {
@@ -137,7 +138,7 @@ async function createNote(title: string): Promise<void> {
 }
 
 function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(intlLocale.value, {
     year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   }).format(new Date(value))
 }
@@ -150,16 +151,17 @@ await resetNotes()
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
+        <LanguageToggle />
         <ThemeToggle />
-        <NuxtLink to="/history" class="secondary-button header-action-button">更新历史</NuxtLink>
-        <button class="primary-button header-action-button" @click="newNoteDialogOpen = true">新建笔记</button>
+        <NuxtLink to="/history" class="secondary-button header-action-button">{{ t('home.history') }}</NuxtLink>
+        <button class="primary-button header-action-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>
       </div>
     </header>
 
     <main class="library-page">
       <div v-if="deletionNotice" class="notice-banner" :data-tone="route.query.sync === 'failed' ? 'warning' : 'success'">
         <span>{{ deletionNotice }}</span>
-        <button type="button" aria-label="关闭提示" @click="dismissDeletionNotice">×</button>
+        <button type="button" :aria-label="t('common.close')" @click="dismissDeletionNotice">×</button>
       </div>
       <div class="search-row">
         <label class="search-box">
@@ -168,20 +170,20 @@ await resetNotes()
             v-model="searchQuery"
             type="search"
             autocomplete="off"
-            placeholder="搜索标题或正文内容"
-            aria-label="搜索笔记标题和内容"
+            :placeholder="t('home.searchPlaceholder')"
+            :aria-label="t('home.searchLabel')"
           >
-          <button v-if="searchQuery" type="button" aria-label="清除搜索" @click="searchQuery = ''">×</button>
+          <button v-if="searchQuery" type="button" :aria-label="t('home.clearSearch')" @click="searchQuery = ''">×</button>
         </label>
         <div class="note-count-inline" aria-live="polite">
           <strong>{{ totalNotes }}</strong>
-          <span>{{ debouncedQuery || selectedTag ? '篇匹配笔记' : '篇笔记' }}</span>
+          <span>{{ debouncedQuery || selectedTag ? t('home.matches') : t('home.notes') }}</span>
         </div>
       </div>
 
-      <div v-if="availableTags.length" class="tag-filter" aria-label="按标签筛选笔记">
-        <span class="tag-filter-label">标签</span>
-        <button type="button" :class="{ active: !selectedTag }" @click="selectedTag = ''">全部</button>
+      <div v-if="availableTags.length" class="tag-filter" :aria-label="t('home.filterByTag')">
+        <span class="tag-filter-label">{{ t('home.tags') }}</span>
+        <button type="button" :class="{ active: !selectedTag }" @click="selectedTag = ''">{{ t('home.all') }}</button>
         <button
           v-for="tag in availableTags"
           :key="tag"
@@ -193,13 +195,13 @@ await resetNotes()
         </button>
       </div>
 
-      <div v-if="loading" class="page-message">正在读取笔记…</div>
+      <div v-if="loading" class="page-message">{{ t('home.loading') }}</div>
       <div v-else-if="loadError" class="page-message error-message">
-        <p>读取笔记失败，请检查笔记目录配置。</p>
-        <button class="secondary-button" @click="resetNotes">重试</button>
+        <p>{{ t('home.loadFailed') }}</p>
+        <button class="secondary-button" @click="resetNotes">{{ t('common.retry') }}</button>
       </div>
       <template v-else-if="notes.length">
-        <section class="note-grid" aria-label="笔记列表">
+        <section class="note-grid" :aria-label="t('home.noteList')">
           <NuxtLink v-for="note in notes" :key="note.path" :to="detailUrl(note.path)" class="note-card">
             <div class="note-card-topline">
               <time :datetime="note.updatedAt">{{ formatDate(note.updatedAt) }}</time>
@@ -208,33 +210,33 @@ await resetNotes()
               </div>
             </div>
             <h2>{{ note.title }}</h2>
-            <p>{{ note.excerpt || '这是一篇空白笔记。' }}</p>
+            <p>{{ note.excerpt || t('home.emptyNote') }}</p>
             <div class="note-card-footer"><span>{{ note.path }}</span><span aria-hidden="true">→</span></div>
           </NuxtLink>
         </section>
         <div v-if="loadMoreError" class="load-more-error">
-          <span>加载更多笔记失败</span>
-          <button type="button" @click="loadMoreNotes">重试</button>
+          <span>{{ t('home.loadMoreFailed') }}</span>
+          <button type="button" @click="loadMoreNotes">{{ t('common.retry') }}</button>
         </div>
         <InfiniteScrollTrigger
           v-else
           :has-more="hasMoreNotes"
           :loading="loadingMore"
-          label="正在加载更多笔记…"
+          :label="t('home.loadingMore')"
           @load="loadMoreNotes"
         />
       </template>
       <section v-else-if="debouncedQuery || selectedTag" class="empty-library search-empty">
-        <h2>没有找到相关笔记</h2>
-        <p v-if="selectedTag">当前搜索范围内没有“{{ selectedTag }}”标签的笔记。</p>
-        <p v-else>没有标题或正文包含“{{ debouncedQuery }}”的笔记。</p>
-        <button class="secondary-button" @click="searchQuery = ''; selectedTag = ''">清除筛选</button>
+        <h2>{{ t('home.noResults') }}</h2>
+        <p v-if="selectedTag">{{ t('home.noTagResults', { tag: selectedTag }) }}</p>
+        <p v-else>{{ t('home.noTextResults', { query: debouncedQuery }) }}</p>
+        <button class="secondary-button" @click="searchQuery = ''; selectedTag = ''">{{ t('home.clearFilters') }}</button>
       </section>
       <section v-else class="empty-library">
         <div class="welcome-mark">M</div>
-        <h2>写下第一篇笔记</h2>
-        <p>新建一篇 Markdown 笔记，点击保存后写入文件并同步到 Git。</p>
-        <button class="primary-button" @click="newNoteDialogOpen = true">新建笔记</button>
+        <h2>{{ t('home.firstNote') }}</h2>
+        <p>{{ t('home.firstNoteDescription') }}</p>
+        <button class="primary-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>
       </section>
     </main>
 
