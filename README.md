@@ -55,7 +55,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000` and create your first note. No database or schema initialization is required.
+Open `http://localhost:3000` to explore the included sample notes, try search and tag filters, or create your own note. No database or schema initialization is required. The examples contain no private data and can be edited or deleted at any time.
 
 > [!TIP]
 > Replace `YOUR_USERNAME` with the actual GitHub account name. If you intend to store private notes, put MyNote in your own **private repository**. Public repositories and public forks are not suitable for private content.
