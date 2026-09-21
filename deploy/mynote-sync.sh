@@ -16,6 +16,13 @@ fi
 
 cd "$repository"
 
+if [ -f "$repository/.env" ]; then
+  private_key="$(sed -n 's/^GITHUB_DEPLOY_KEY_PATH=//p' "$repository/.env" | tail -n 1)"
+  if [ -n "$private_key" ] && [ -f "$private_key" ]; then
+    export GIT_SSH_COMMAND="ssh -i $private_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$state_directory/github_known_hosts"
+  fi
+fi
+
 echo "正在检查 origin/main..."
 git fetch --prune origin main
 
