@@ -1,0 +1,11 @@
+.git
+.nuxt
+.output
+node_modules
+.env
+.env.*
+!.env.example
+!.env.docker.example
+docker-secrets
+*.log
+.DS_Store

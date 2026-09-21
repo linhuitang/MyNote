@@ -1,0 +1,23 @@
+services:
+  mynote:
+    build:
+      context: .
+    image: mynote:local
+    container_name: mynote
+    restart: unless-stopped
+    ports:
+      - "${MYNOTE_BIND_ADDRESS:-127.0.0.1}:${MYNOTE_PORT:-3100}:3000"
+    environment:
+      NUXT_PUBLIC_APP_NAME: "${MYNOTE_APP_NAME:-MyNote}"
+      NUXT_NOTES_DIRECTORY: /repository/notes
+      MYNOTE_REPOSITORY_DIRECTORY: /repository
+      GIT_USER_NAME: "${GIT_USER_NAME:-MyNote}"
+      GIT_USER_EMAIL: "${GIT_USER_EMAIL:-mynote@localhost}"
+    volumes:
+      - ./:/repository
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/api/notes"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

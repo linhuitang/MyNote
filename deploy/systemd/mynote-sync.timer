@@ -1,0 +1,11 @@
+[Unit]
+Description=Check GitHub for MyNote updates every minute
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+AccuracySec=5s
+Unit=mynote-sync.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+services:
+  mynote:
+    environment:
+      GIT_SSH_COMMAND: "ssh -i /run/secrets/github_deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/tmp/github_known_hosts"
+    secrets:
+      - github_deploy_key
+
+secrets:
+  github_deploy_key:
+    file: "${GITHUB_DEPLOY_KEY_PATH:-./docker-secrets/github_deploy_key}"
