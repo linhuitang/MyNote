@@ -248,6 +248,7 @@ cp .env.docker.example .env
 MYNOTE_BIND_ADDRESS=127.0.0.1
 MYNOTE_PORT=3100
 MYNOTE_APP_NAME=MyNote
+MYNOTE_READ_ONLY=false
 GIT_USER_NAME=MyNote
 GIT_USER_EMAIL=mynote@example.com
 GITHUB_DEPLOY_KEY_PATH=/opt/MyNote/docker-secrets/github_deploy_key
@@ -438,6 +439,36 @@ ssh -L 3100:127.0.0.1:3100 USER@SERVER_IP
 
 MyNote 自身不会验证用户身份，Cloudflare Access 或其他上游认证是生产部署的安全边界。
 
+## 只读演示模式
+
+公开演示站应启用只读模式。在 `.env` 中设置：
+
+```dotenv
+MYNOTE_READ_ONLY=true
+```
+
+然后正常运行 systemd 安装器：
+
+```bash
+cd /opt/MyNote
+sudo ./deploy/install-systemd-sync.sh
+```
+
+安装器会自动使用 `compose.demo.yml`。在此模式下：
+
+- 界面会标明当前是只读演示站；
+- 不显示新建、编辑、删除和上传入口；
+- 写入及上传 API 会返回 HTTP `403`；
+- 项目仓库以只读方式挂载到容器；
+- GitHub 私钥不会挂载到容器；
+- 宿主机上的 systemd 定时器仍然可以拉取仓库更新。
+
+如果不需要安装定时同步，也可以直接启动：
+
+```bash
+docker compose -f compose.yml -f compose.demo.yml up -d --build
+```
+
 ## 环境变量
 
 | 变量 | 默认值 | 说明 |
@@ -446,6 +477,7 @@ MyNote 自身不会验证用户身份，Cloudflare Access 或其他上游认证�
 | `MYNOTE_BIND_ADDRESS` | `127.0.0.1` | Docker 在宿主机监听的地址 |
 | `MYNOTE_PORT` | `3100` | Docker 在宿主机监听的端口 |
 | `MYNOTE_APP_NAME` | `MyNote` | 页面中显示的应用名称 |
+| `MYNOTE_READ_ONLY` | `false` | 设置为 `true` 时启用受保护的只读演示模式 |
 | `GIT_USER_NAME` | `MyNote` | 自动提交使用的 Git 用户名 |
 | `GIT_USER_EMAIL` | `mynote@localhost` | 自动提交使用的 Git 邮箱 |
 | `GITHUB_DEPLOY_KEY_PATH` | `./docker-secrets/github_deploy_key` | GitHub Deploy Key 私钥路径 |

@@ -7,6 +7,7 @@ const route = useRoute()
 const router = useRouter()
 const config = useRuntimeConfig()
 const { t, intlLocale } = useI18n()
+const readOnly = useReadOnly()
 const note = ref<NoteDocument | null>(null)
 const content = ref('')
 const savedContent = ref('')
@@ -16,7 +17,7 @@ const uploadingImages = ref(false)
 const deleting = ref(false)
 const deleteDialogOpen = ref(false)
 const deleteError = ref('')
-const editing = ref(route.query.new === '1')
+const editing = ref(route.query.new === '1' && !readOnly.value)
 const mobileView = ref<'edit' | 'preview'>('edit')
 const statusMessage = ref('')
 const statusTone = ref<'neutral' | 'success' | 'warning' | 'error'>('neutral')
@@ -44,6 +45,10 @@ async function loadNote(): Promise<void> {
   loading.value = true
   statusMessage.value = ''
   try {
+    if (readOnly.value && route.query.new === '1') {
+      await navigateTo('/', { replace: true })
+      return
+    }
     if (route.query.new === '1') {
       const newTitle = typeof route.query.title === 'string' ? route.query.title : t('editor.untitled')
       note.value = {
@@ -121,6 +126,7 @@ async function goBack(): Promise<void> {
 }
 
 function startEditing(): void {
+  if (readOnly.value) return
   editing.value = true
   mobileView.value = 'edit'
   statusMessage.value = ''
@@ -364,6 +370,7 @@ await loadNote()
         <AppBrand />
       </div>
       <div class="save-group">
+        <ReadOnlyBadge v-if="readOnly" />
         <LanguageSelector />
         <ThemeToggle />
         <template v-if="editing">
@@ -374,7 +381,7 @@ await loadNote()
             {{ uploadingImages ? t('editor.uploading') : saving ? t('editor.saving') : t('editor.saveButton') }}
           </button>
         </template>
-        <template v-else>
+        <template v-else-if="!readOnly">
           <button class="danger-text-button header-action-button" @click="openDeleteDialog">{{ t('editor.delete') }}</button>
           <button class="primary-button header-action-button" @click="startEditing">{{ t('editor.edit') }}</button>
         </template>

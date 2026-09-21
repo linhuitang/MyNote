@@ -31,6 +31,7 @@ if [ ! -f "$repository/.env" ]; then
 MYNOTE_BIND_ADDRESS=127.0.0.1
 MYNOTE_PORT=3100
 MYNOTE_APP_NAME=MyNote
+MYNOTE_READ_ONLY=false
 GIT_USER_NAME=$git_name
 GIT_USER_EMAIL=$git_email
 GITHUB_DEPLOY_KEY_PATH=$repository/docker-secrets/github_deploy_key
@@ -52,18 +53,28 @@ if ! grep -q '^GITHUB_DEPLOY_KEY_PATH=' "$repository/.env"; then
   printf 'GITHUB_DEPLOY_KEY_PATH=%s\n' "$repository/docker-secrets/github_deploy_key" >> "$repository/.env"
 fi
 
-private_key="$(sed -n 's/^GITHUB_DEPLOY_KEY_PATH=//p' "$repository/.env" | tail -n 1)"
-if [ -z "$private_key" ] || [ ! -f "$private_key" ]; then
-  echo "GITHUB_DEPLOY_KEY_PATH 指向的私钥不存在：${private_key:-未配置}"
-  exit 1
-fi
+read_only="$(sed -n 's/^MYNOTE_READ_ONLY=//p' "$repository/.env" | tail -n 1 | tr '[:upper:]' '[:lower:]')"
 
 echo "正在验证 Docker Compose 配置..."
 cd "$repository"
-docker compose -f compose.yml -f compose.github.yml config >/dev/null
+if [ "$read_only" = "true" ] || [ "$read_only" = "1" ] || [ "$read_only" = "yes" ] || [ "$read_only" = "on" ]; then
+  docker compose -f compose.yml -f compose.demo.yml config >/dev/null
+  echo "将以只读演示模式部署，不会向容器挂载 GitHub 私钥"
+else
+  private_key="$(sed -n 's/^GITHUB_DEPLOY_KEY_PATH=//p' "$repository/.env" | tail -n 1)"
+  if [ -z "$private_key" ] || [ ! -f "$private_key" ]; then
+    echo "GITHUB_DEPLOY_KEY_PATH 指向的私钥不存在：${private_key:-未配置}"
+    exit 1
+  fi
+  docker compose -f compose.yml -f compose.github.yml config >/dev/null
+fi
 
 echo "正在构建并启动 MyNote..."
-docker compose -f compose.yml -f compose.github.yml up -d --build --remove-orphans
+if [ "$read_only" = "true" ] || [ "$read_only" = "1" ] || [ "$read_only" = "yes" ] || [ "$read_only" = "on" ]; then
+  docker compose -f compose.yml -f compose.demo.yml up -d --build --remove-orphans
+else
+  docker compose -f compose.yml -f compose.github.yml up -d --build --remove-orphans
+fi
 
 install -m 0644 "$repository/deploy/systemd/mynote-sync.service" /etc/systemd/system/mynote-sync.service
 install -m 0644 "$repository/deploy/systemd/mynote-sync.timer" /etc/systemd/system/mynote-sync.timer

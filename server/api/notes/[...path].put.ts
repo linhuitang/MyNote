@@ -2,8 +2,10 @@ import type { SaveNoteBody, SaveNoteResult } from '~~/shared/types/note'
 import { syncNoteToGit } from '../../utils/git-sync'
 import { finaliseTemporaryImages } from '../../utils/note-assets'
 import { saveNote } from '../../utils/note-store'
+import { assertWritable } from '../../utils/read-only'
 
 export default defineEventHandler(async (event): Promise<SaveNoteResult> => {
+  assertWritable(event)
   const path = getRouterParam(event, 'path')
   if (!path) throw createError({ statusCode: 400, statusMessage: '缺少笔记路径' })
 

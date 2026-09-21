@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     notesDirectory: './notes',
     public: {
       appName: 'MyNote',
+      readOnly: false,
     },
   },
 })

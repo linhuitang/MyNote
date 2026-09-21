@@ -248,6 +248,7 @@ Edit `.env`:
 MYNOTE_BIND_ADDRESS=127.0.0.1
 MYNOTE_PORT=3100
 MYNOTE_APP_NAME=MyNote
+MYNOTE_READ_ONLY=false
 GIT_USER_NAME=MyNote
 GIT_USER_EMAIL=mynote@example.com
 GITHUB_DEPLOY_KEY_PATH=/opt/MyNote/docker-secrets/github_deploy_key
@@ -438,6 +439,36 @@ Recommended setup:
 
 MyNote does not authenticate users itself. Cloudflare Access or another upstream authentication system is the security boundary for production deployments.
 
+## Read-only Demo Mode
+
+Use read-only mode for a public demonstration site. Set the following value in `.env`:
+
+```dotenv
+MYNOTE_READ_ONLY=true
+```
+
+Then run the systemd installer normally:
+
+```bash
+cd /opt/MyNote
+sudo ./deploy/install-systemd-sync.sh
+```
+
+The installer automatically uses `compose.demo.yml`. In this mode:
+
+- the interface identifies the site as a read-only demo;
+- new, edit, delete, and upload controls are unavailable;
+- write and upload API requests return HTTP `403`;
+- the repository is mounted read-only inside the container;
+- the GitHub private key is not mounted into the container;
+- the host systemd timer can still pull repository updates.
+
+To start the demo without installing the timer:
+
+```bash
+docker compose -f compose.yml -f compose.demo.yml up -d --build
+```
+
 ## Environment Variables
 
 | Variable | Default | Description |
@@ -446,6 +477,7 @@ MyNote does not authenticate users itself. Cloudflare Access or another upstream
 | `MYNOTE_BIND_ADDRESS` | `127.0.0.1` | Host address used by Docker |
 | `MYNOTE_PORT` | `3100` | Host port used by Docker |
 | `MYNOTE_APP_NAME` | `MyNote` | Application name displayed in the UI |
+| `MYNOTE_READ_ONLY` | `false` | Enables protected read-only demo mode when set to `true` |
 | `GIT_USER_NAME` | `MyNote` | Git author name for automatic commits |
 | `GIT_USER_EMAIL` | `mynote@localhost` | Git author email for automatic commits |
 | `GITHUB_DEPLOY_KEY_PATH` | `./docker-secrets/github_deploy_key` | Path to the GitHub Deploy Key private key |

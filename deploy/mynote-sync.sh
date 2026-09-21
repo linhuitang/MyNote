@@ -69,7 +69,12 @@ fi
 
 if [ "$requires_rebuild" -eq 1 ]; then
   echo "检测到应用代码或部署配置变化，正在重新构建容器..."
-  docker compose -f compose.yml -f compose.github.yml up -d --build --remove-orphans
+  read_only="$(sed -n 's/^MYNOTE_READ_ONLY=//p' "$repository/.env" 2>/dev/null | tail -n 1 | tr '[:upper:]' '[:lower:]')"
+  if [ "$read_only" = "true" ] || [ "$read_only" = "1" ] || [ "$read_only" = "yes" ] || [ "$read_only" = "on" ]; then
+    docker compose -f compose.yml -f compose.demo.yml up -d --build --remove-orphans
+  else
+    docker compose -f compose.yml -f compose.github.yml up -d --build --remove-orphans
+  fi
 else
   echo "只有 notes 目录发生变化，无需重建容器"
 fi

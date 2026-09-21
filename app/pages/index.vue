@@ -5,6 +5,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const router = useRouter()
 const { t, intlLocale } = useI18n()
+const readOnly = useReadOnly()
 useHead({ title: config.public.appName })
 
 const searchQuery = ref('')
@@ -126,6 +127,7 @@ function detailUrl(path: string): string {
 }
 
 async function createNote(title: string): Promise<void> {
+  if (readOnly.value) return
   const base = slugFor(title)
   let path = `${base}.md`
   let suffix = 2
@@ -151,10 +153,11 @@ await resetNotes()
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
+        <ReadOnlyBadge v-if="readOnly" />
         <LanguageSelector />
         <ThemeToggle />
         <NuxtLink to="/history" class="secondary-button header-action-button">{{ t('home.history') }}</NuxtLink>
-        <button class="primary-button header-action-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>
+        <button v-if="!readOnly" class="primary-button header-action-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>
       </div>
     </header>
 
@@ -234,13 +237,20 @@ await resetNotes()
       </section>
       <section v-else class="empty-library">
         <div class="welcome-mark">M</div>
-        <h2>{{ t('home.firstNote') }}</h2>
-        <p>{{ t('home.firstNoteDescription') }}</p>
-        <button class="primary-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>
+        <template v-if="readOnly">
+          <h2>{{ t('readOnly.label') }}</h2>
+          <p>{{ t('readOnly.emptyDescription') }}</p>
+        </template>
+        <template v-else>
+          <h2>{{ t('home.firstNote') }}</h2>
+          <p>{{ t('home.firstNoteDescription') }}</p>
+          <button class="primary-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>
+        </template>
       </section>
     </main>
 
     <NewNoteDialog
+      v-if="!readOnly"
       :open="newNoteDialogOpen"
       @close="newNoteDialogOpen = false"
       @create="createNote"

@@ -9,6 +9,7 @@ services:
       - "${MYNOTE_BIND_ADDRESS:-127.0.0.1}:${MYNOTE_PORT:-3100}:3000"
     environment:
       NUXT_PUBLIC_APP_NAME: "${MYNOTE_APP_NAME:-MyNote}"
+      NUXT_PUBLIC_READ_ONLY: "${MYNOTE_READ_ONLY:-false}"
       NUXT_NOTES_DIRECTORY: /repository/notes
       MYNOTE_REPOSITORY_DIRECTORY: /repository
       GIT_USER_NAME: "${GIT_USER_NAME:-MyNote}"

@@ -10,6 +10,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const hash = computed(() => String(route.params.hash || ''))
 const { t, intlLocale } = useI18n()
+const readOnly = useReadOnly()
 
 const { data: detail, status, error, refresh } = await useFetch<NoteHistoryDetail>(() => `/api/history/${hash.value}`)
 
@@ -62,6 +63,7 @@ function lineType(line: string): string {
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
+        <ReadOnlyBadge v-if="readOnly" />
         <LanguageSelector />
         <ThemeToggle />
         <NuxtLink to="/history" class="secondary-button header-action-button">{{ t('detail.back') }}</NuxtLink>

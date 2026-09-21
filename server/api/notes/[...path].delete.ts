@@ -2,8 +2,10 @@ import type { DeleteNoteBody, DeleteNoteResult } from '~~/shared/types/note'
 import { syncNoteToGit } from '../../utils/git-sync'
 import { removeNoteAttachments } from '../../utils/note-assets'
 import { deleteNote } from '../../utils/note-store'
+import { assertWritable } from '../../utils/read-only'
 
 export default defineEventHandler(async (event): Promise<DeleteNoteResult> => {
+  assertWritable(event)
   const path = getRouterParam(event, 'path')
   if (!path) throw createError({ statusCode: 400, statusMessage: '缺少笔记路径' })
 

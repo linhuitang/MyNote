@@ -1,0 +1,6 @@
+services:
+  mynote:
+    environment:
+      NUXT_PUBLIC_READ_ONLY: "true"
+    volumes:
+      - ./:/repository:ro

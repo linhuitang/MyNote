@@ -3,6 +3,7 @@ import type { NoteHistoryChange, NoteHistoryEntry, PaginatedResult } from '~~/sh
 
 const config = useRuntimeConfig()
 const { t, intlLocale } = useI18n()
+const readOnly = useReadOnly()
 useHead(() => ({ title: `${t('history.pageTitle')} · ${config.public.appName}` }))
 
 const history = ref<NoteHistoryEntry[]>([])
@@ -97,6 +98,7 @@ await resetHistory()
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
+        <ReadOnlyBadge v-if="readOnly" />
         <LanguageSelector />
         <ThemeToggle />
         <NuxtLink to="/" class="secondary-button header-action-button">{{ t('history.back') }}</NuxtLink>
