@@ -368,6 +368,20 @@ a { color: inherit; text-decoration: none; }
 .blog-reader-tags { width: auto; margin: 14px 0 0; padding: 0; }
 .blog-article-meta + .blog-article-body { padding-top: 24px; }
 .blog-article-body { padding-bottom: 100px; }
+.blog-archive-page { width: min(780px, calc(100% - 40px)); margin: 0 auto; padding: 68px 0 100px; }
+.blog-archive-heading { padding-bottom: 42px; border-bottom: 1px solid var(--line); }
+.blog-archive-heading h1 { margin: 10px 0 10px; font-family: var(--font-serif); font-size: 48px; font-weight: 580; letter-spacing: -.035em; }
+.blog-archive-heading > p:last-child { margin: 0; color: var(--muted); font-size: 15px; }
+.blog-archive-groups { display: grid; }
+.blog-archive-group { padding: 34px 0; display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 24px; border-bottom: 1px solid var(--line); }
+.blog-archive-group > h2 { margin: 3px 0 0; font-family: var(--font-serif); font-size: 24px; font-weight: 550; }
+.blog-archive-list { min-width: 0; display: grid; }
+.blog-archive-item { min-height: 46px; display: grid; grid-template-columns: 64px minmax(0, 1fr) 18px; align-items: center; gap: 12px; border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.blog-archive-item:last-child { border-bottom: 0; }
+.blog-archive-item time { color: var(--muted); font-size: 11px; }
+.blog-archive-item > span:nth-child(2) { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.blog-archive-item > span:last-child { color: var(--muted); text-align: right; }
+.blog-archive-item:hover > span:nth-child(2), .blog-archive-item:hover > span:last-child { color: var(--accent-dark); }
 
 .note-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .note-card {
@@ -616,6 +630,10 @@ a { color: inherit; text-decoration: none; }
   .blog-post-card h2 { font-size: 24px; }
   .blog-article-meta { width: auto; margin: 0 20px; padding-top: 28px; }
   .blog-article-meta + .blog-article-body { padding-top: 20px; }
+  .blog-archive-page { width: min(100% - 32px, 780px); padding: 44px 0 70px; }
+  .blog-archive-heading h1 { font-size: 38px; }
+  .blog-archive-group { grid-template-columns: 1fr; gap: 15px; padding: 26px 0; }
+  .blog-archive-group > h2 { font-size: 21px; }
   .search-row { align-items: center; gap: 12px; }
   .search-box { width: auto; flex: 1; }
   .note-count-inline strong { font-size: 21px; }

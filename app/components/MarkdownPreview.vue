@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DOMPurify from 'dompurify'
+import DOMPurify from 'isomorphic-dompurify'
 import { marked } from 'marked'
 import { stripFrontmatter } from '~~/shared/utils/markdown-metadata'
 
@@ -29,15 +29,7 @@ function imageUrl(href: string): string {
 }
 
 function openLinksInNewTabs(html: string): string {
-  const document = new DOMParser().parseFromString(html, 'text/html')
-  for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
-    const rel = new Set((link.getAttribute('rel') || '').split(/\s+/).filter(Boolean))
-    rel.add('noopener')
-    rel.add('noreferrer')
-    link.target = '_blank'
-    link.rel = [...rel].join(' ')
-  }
-  return document.body.innerHTML
+  return html.replace(/<a(?=\s|>)/g, '<a target="_blank" rel="noopener noreferrer"')
 }
 
 const renderedContent = computed(() => {

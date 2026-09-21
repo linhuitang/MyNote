@@ -449,6 +449,7 @@ Blog mode turns the same Markdown repository into a public, read-only blog. Conf
 MYNOTE_MODE=blog
 MYNOTE_APP_NAME=MyNote Blog
 MYNOTE_BLOG_DESCRIPTION=Writing about software, tools, and ideas.
+MYNOTE_SITE_URL=https://blog.example.com
 ```
 
 Blog mode automatically enables all read-only protections, uses the protected `compose.demo.yml` deployment, hides editor and Git-history interfaces, and rejects mutation APIs. Articles continue to live in `notes/`:
@@ -493,6 +494,18 @@ git push origin main
 
 The systemd timer pulls the commit within about a minute. Note-only changes appear without rebuilding the container.
 
+Public blog features include:
+
+- server-rendered article and archive pages;
+- canonical URLs, Open Graph metadata, and Schema.org structured data;
+- an archive at `/archive`;
+- an RSS feed at `/rss.xml`;
+- a sitemap at `/sitemap.xml`;
+- a mode-aware `/robots.txt` that blocks indexing in notes mode;
+- server-side Markdown sanitization with DOMPurify.
+
+Set `MYNOTE_SITE_URL` to the final public HTTPS origin without a trailing slash. It is used to generate canonical, Open Graph, RSS, Sitemap, and robots URLs.
+
 ## Read-only Demo Mode
 
 Use read-only mode for a public demonstration site. Set the following value in `.env`:
@@ -533,6 +546,7 @@ docker compose -f compose.yml -f compose.demo.yml up -d --build
 | `MYNOTE_APP_NAME` | `MyNote` | Application name displayed in the UI |
 | `MYNOTE_MODE` | `notes` | Interface mode: `notes` or `blog`; blog mode is always read-only |
 | `MYNOTE_BLOG_DESCRIPTION` | `A Git-powered Markdown blog.` | Introduction displayed on the blog home page |
+| `MYNOTE_SITE_URL` | Empty | Public HTTPS origin used for canonical URLs, RSS, and Sitemap |
 | `MYNOTE_READ_ONLY` | `false` | Enables protected read-only demo mode when set to `true` |
 | `GIT_USER_NAME` | `MyNote` | Git author name for automatic commits |
 | `GIT_USER_EMAIL` | `mynote@localhost` | Git author email for automatic commits |
@@ -545,6 +559,8 @@ The container always uses:
 NUXT_NOTES_DIRECTORY=/repository/notes
 MYNOTE_REPOSITORY_DIRECTORY=/repository
 NITRO_PORT=3000
+NUXT_PUBLIC_APP_MODE=notes
+NUXT_PUBLIC_SITE_URL=
 ```
 
 These container-internal variables normally do not need to be changed.

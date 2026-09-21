@@ -34,6 +34,23 @@ const apiUrl = computed(() => `/api/notes/${notePath.value.split('/').map(encode
 const isDirty = computed(() => content.value !== savedContent.value)
 const title = computed(() => content.value.match(/^\s*#\s+(.+)$/m)?.[1]?.trim() || note.value?.title || t('editor.untitled'))
 const tags = computed(() => tagsFromMarkdown(content.value))
+const siteUrl = computed(() => String(config.public.siteUrl || '').replace(/\/+$/, ''))
+const publicArticlePath = computed(() => `/notes/${notePath.value.split('/').map(encodeURIComponent).join('/')}`)
+
+function articleCoverUrl(): string {
+  const cover = note.value?.cover
+  if (!cover) return ''
+  if (/^https?:\/\//i.test(cover)) return cover
+  if (cover.startsWith('/')) return `${siteUrl.value}${cover}`
+
+  const segments = notePath.value.split('/').slice(0, -1)
+  for (const segment of cover.replaceAll('\\', '/').split('/')) {
+    if (!segment || segment === '.') continue
+    if (segment === '..') segments.pop()
+    else segments.push(segment)
+  }
+  return `${siteUrl.value}/api/note-assets/${segments.map(encodeURIComponent).join('/')}`
+}
 
 const { data: noteHistory, status: historyStatus, refresh: refreshHistory } = await useFetch<NoteHistoryEntry[]>('/api/note-history', {
   default: () => [],
@@ -49,7 +66,33 @@ useHead(() => ({
         { property: 'og:title', content: title.value },
         { property: 'og:description', content: note.value?.description || note.value?.excerpt || '' },
         { property: 'og:type', content: 'article' },
+        ...(siteUrl.value ? [{ property: 'og:url', content: `${siteUrl.value}${publicArticlePath.value}` }] : []),
+        ...(siteUrl.value && note.value?.cover ? [{ property: 'og:image', content: articleCoverUrl() }] : []),
+        ...(note.value?.publishedAt ? [{ property: 'article:published_time', content: note.value.publishedAt }] : []),
+        ...(note.value?.contentUpdatedAt ? [{ property: 'article:modified_time', content: note.value.contentUpdatedAt }] : []),
       ]
+    : [],
+  link: isBlog.value
+    ? [
+        { rel: 'alternate', type: 'application/rss+xml', title: `${config.public.appName} RSS`, href: '/rss.xml' },
+        ...(siteUrl.value ? [{ rel: 'canonical' as const, href: `${siteUrl.value}${publicArticlePath.value}` }] : []),
+      ]
+    : [],
+  script: isBlog.value && siteUrl.value && note.value
+    ? [{
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: title.value,
+          description: note.value.description || note.value.excerpt,
+          datePublished: note.value.publishedAt || note.value.updatedAt,
+          dateModified: note.value.contentUpdatedAt || note.value.publishedAt || note.value.updatedAt,
+          mainEntityOfPage: `${siteUrl.value}${publicArticlePath.value}`,
+          url: `${siteUrl.value}${publicArticlePath.value}`,
+          ...(note.value.cover ? { image: articleCoverUrl() } : {}),
+        }).replaceAll('<', '\\u003c'),
+      }]
     : [],
 }))
 

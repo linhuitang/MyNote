@@ -1,4 +1,3 @@
-export default defineNuxtPlugin(() => {
-  const { initialiseTheme } = useTheme()
-  initialiseTheme()
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.hook('app:mounted', () => useTheme().initialiseTheme())
 })

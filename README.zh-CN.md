@@ -449,6 +449,7 @@ MyNote 自身不会验证用户身份，Cloudflare Access 或其他上游认证�
 MYNOTE_MODE=blog
 MYNOTE_APP_NAME=MyNote Blog
 MYNOTE_BLOG_DESCRIPTION=记录软件、工具和想法。
+MYNOTE_SITE_URL=https://blog.example.com
 ```
 
 博客模式会自动启用全部只读保护，使用受保护的 `compose.demo.yml` 部署，隐藏编辑器和 Git 历史界面，并拒绝写入 API。文章仍然保存在 `notes/` 中：
@@ -493,6 +494,18 @@ git push origin main
 
 systemd 定时器会在约一分钟内拉取提交。仅修改文章时无需重新构建容器。
 
+公开博客还提供：
+
+- 服务端渲染的文章页和归档页；
+- Canonical URL、Open Graph 元数据和 Schema.org 结构化数据；
+- `/archive` 文章归档；
+- `/rss.xml` RSS 订阅；
+- `/sitemap.xml` 站点地图；
+- 根据模式生成的 `/robots.txt`，笔记模式默认禁止索引；
+- 使用 DOMPurify 在服务端安全清理 Markdown HTML。
+
+请将 `MYNOTE_SITE_URL` 设置为最终的公开 HTTPS 地址，不要包含结尾斜杠。它用于生成 Canonical、Open Graph、RSS、Sitemap 和 robots 地址。
+
 ## 只读演示模式
 
 公开演示站应启用只读模式。在 `.env` 中设置：
@@ -533,6 +546,7 @@ docker compose -f compose.yml -f compose.demo.yml up -d --build
 | `MYNOTE_APP_NAME` | `MyNote` | 页面中显示的应用名称 |
 | `MYNOTE_MODE` | `notes` | 界面模式：`notes` 或 `blog`；博客模式始终只读 |
 | `MYNOTE_BLOG_DESCRIPTION` | `A Git-powered Markdown blog.` | 博客首页显示的介绍 |
+| `MYNOTE_SITE_URL` | 空 | 用于 Canonical、RSS 和 Sitemap 的公开 HTTPS 地址 |
 | `MYNOTE_READ_ONLY` | `false` | 设置为 `true` 时启用受保护的只读演示模式 |
 | `GIT_USER_NAME` | `MyNote` | 自动提交使用的 Git 用户名 |
 | `GIT_USER_EMAIL` | `mynote@localhost` | 自动提交使用的 Git 邮箱 |
@@ -545,6 +559,8 @@ docker compose -f compose.yml -f compose.demo.yml up -d --build
 NUXT_NOTES_DIRECTORY=/repository/notes
 MYNOTE_REPOSITORY_DIRECTORY=/repository
 NITRO_PORT=3000
+NUXT_PUBLIC_APP_MODE=notes
+NUXT_PUBLIC_SITE_URL=
 ```
 
 通常不需要修改这些容器内部变量。

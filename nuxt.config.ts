@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-09-21',
   devtools: { enabled: false },
-  ssr: false,
+  ssr: true,
   css: ['~/assets/css/main.css'],
   app: {
     head: {
@@ -22,6 +22,7 @@ export default defineNuxtConfig({
       appName: 'MyNote',
       appMode: 'notes',
       blogDescription: 'A Git-powered Markdown blog.',
+      siteUrl: '',
       readOnly: false,
     },
   },

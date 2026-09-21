@@ -7,7 +7,37 @@ const router = useRouter()
 const { t, intlLocale } = useI18n()
 const readOnly = useReadOnly()
 const { isBlog } = useAppMode()
-useHead({ title: config.public.appName })
+const siteUrl = computed(() => String(config.public.siteUrl || '').replace(/\/+$/, ''))
+useHead(() => ({
+  title: config.public.appName,
+  meta: isBlog.value
+    ? [
+        { name: 'description', content: String(config.public.blogDescription) },
+        { property: 'og:title', content: String(config.public.appName) },
+        { property: 'og:description', content: String(config.public.blogDescription) },
+        { property: 'og:type', content: 'website' },
+        ...(siteUrl.value ? [{ property: 'og:url', content: siteUrl.value }] : []),
+      ]
+    : [],
+  link: isBlog.value
+    ? [
+        { rel: 'alternate', type: 'application/rss+xml', title: `${config.public.appName} RSS`, href: '/rss.xml' },
+        ...(siteUrl.value ? [{ rel: 'canonical' as const, href: siteUrl.value }] : []),
+      ]
+    : [],
+  script: isBlog.value && siteUrl.value
+    ? [{
+        type: 'application/ld+json',
+        innerHTML: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: config.public.appName,
+          description: config.public.blogDescription,
+          url: siteUrl.value,
+        }).replaceAll('<', '\\u003c'),
+      }]
+    : [],
+}))
 
 const searchQuery = ref('')
 const debouncedQuery = ref('')

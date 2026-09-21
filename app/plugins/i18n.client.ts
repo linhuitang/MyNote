@@ -1,3 +1,3 @@
-export default defineNuxtPlugin(() => {
-  useI18n().initialiseLocale()
+export default defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.hook('app:mounted', () => useI18n().initialiseLocale())
 })

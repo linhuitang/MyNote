@@ -11,6 +11,7 @@ services:
       NUXT_PUBLIC_APP_NAME: "${MYNOTE_APP_NAME:-MyNote}"
       NUXT_PUBLIC_APP_MODE: "${MYNOTE_MODE:-notes}"
       NUXT_PUBLIC_BLOG_DESCRIPTION: "${MYNOTE_BLOG_DESCRIPTION:-A Git-powered Markdown blog.}"
+      NUXT_PUBLIC_SITE_URL: "${MYNOTE_SITE_URL:-}"
       NUXT_PUBLIC_READ_ONLY: "${MYNOTE_READ_ONLY:-false}"
       NUXT_NOTES_DIRECTORY: /repository/notes
       MYNOTE_REPOSITORY_DIRECTORY: /repository
