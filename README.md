@@ -1,27 +1,107 @@
-# MyNote
+<p align="center">
+  <img src="./public/mynote-logo.png" width="96" height="96" alt="MyNote Logo">
+</p>
 
-MyNote 是一个 **Markdown 文件优先、Git 驱动** 的个人笔记应用。它使用 Nuxt、Vue 3、Nitro 和 TypeScript 构建，可在浏览器中编辑笔记，也可以直接使用任意文本编辑器修改 `notes` 目录中的 `.md` 文件。
+<h1 align="center">MyNote</h1>
 
-网页中的修改只有在点击“保存并同步”后才会写入磁盘、创建 Git 提交并推送到远端仓库。
+<p align="center"><strong>把笔记留在自己的 Markdown 文件里，同时拥有现代网页编辑体验。</strong></p>
+
+<p align="center">
+  浏览器里随手写，本地编辑器里深度改；点击保存，Git 自动记录并同步每一次变化。
+</p>
+
+<p align="center">
+  <a href="#快速体验">快速体验</a> ·
+  <a href="#功能一览">功能一览</a> ·
+  <a href="#docker-快速部署">Docker 部署</a> ·
+  <a href="#systemd-自动拉取与部署">自动更新</a>
+</p>
+
+## 为什么选择 MyNote
+
+许多笔记应用把内容保存在专用数据库或云服务中。MyNote 选择另一条路径：**文件才是数据本体，网页只是更舒服的编辑入口，Git 才是版本历史。**
+
+> **MyNote = Markdown 文件 + 网页编辑器 + Git 历史 + 自托管部署**
+
+| 核心优势 | 你能得到什么 |
+| --- | --- |
+| 📄 **文件属于你** | 每篇笔记都是普通 `.md` 文件，不被数据库或私有格式锁定 |
+| ✍️ **两种编辑方式** | 可在网页中编辑，也可直接使用 VS Code、Obsidian 或其他文本编辑器 |
+| 🕘 **每次修改可追溯** | 保存、删除都会形成 Git 提交，可查看整库历史和单篇笔记历史 |
+| 🔄 **多端同步简单透明** | 本地提交到 GitHub，服务器自动拉取；网页保存也能直接推送 |
+| 🖼️ **不只支持纯文字** | 标签、全文搜索、图片粘贴、拖拽上传和 Markdown 预览全部内置 |
+| 🏠 **运行位置由你决定** | 可以只在本机运行，也可以使用 Docker 部署到自己的服务器 |
+
+### 和常见笔记方案有什么不同
+
+| 常见网页笔记应用 | MyNote |
+| --- | --- |
+| 内容保存在数据库中 | 内容直接保存在 `notes/` 目录 |
+| 通常只能在指定客户端编辑 | 浏览器和任意 Markdown 编辑器都能编辑 |
+| 数据导出后才能迁移 | 复制文件夹或克隆仓库即可迁移 |
+| 历史版本由平台决定 | Git 完整记录历史，可自行备份和恢复 |
+| 服务停止后可能难以继续使用 | Markdown 文件始终可以独立读取 |
+
+## 快速体验
+
+```bash
+git clone https://github.com/YOUR_USERNAME/MyNote.git
+cd MyNote
+npm ci
+npm run dev
+```
+
+打开 `http://localhost:3000`，新建第一篇笔记。无需数据库，也无需初始化数据表。
+
+> [!TIP]
+> `YOUR_USERNAME` 需要替换为实际的 GitHub 用户名。准备保存私人笔记时，建议把项目放入你自己的 **Private 仓库**；公共仓库及公共 Fork 不适合存放私人内容。
+
+## 功能一览
+
+| 写作体验 | 笔记管理 |
+| --- | --- |
+| Markdown 编辑与实时预览 | 标题和正文全文搜索 |
+| 阅读、编辑模式分离 | YAML Frontmatter 标签与筛选 |
+| 常用 Markdown 格式工具栏 | 12 条一批的触底加载 |
+| 自动适配桌面端和移动端 | 删除确认与关联图片清理 |
+| 浅色、深色和跟随系统主题 | 外部编辑冲突检测 |
+| 图片选择、截图粘贴和拖拽上传 | 图片使用标准 Markdown 相对路径 |
+
+| Git 与同步 | 部署与运维 |
+| --- | --- |
+| 保存后自动提交并推送 | 多阶段 Docker 镜像 |
+| 全部更新历史与提交 Diff | 默认仅监听 `127.0.0.1:3100` |
+| 单篇笔记详细历史 | Docker 健康检查 |
+| 文件版本校验，避免误覆盖 | systemd 每分钟检查远端更新 |
+| 源码和笔记使用同一套 Git 流程 | 仅笔记变化时无需重建容器 |
+
+## 适合谁
+
+- 希望自己掌握笔记文件，而不是依赖某个云笔记平台的人
+- 已经习惯 Markdown、Git、VS Code 或 Obsidian 的开发者
+- 想在手机和电脑浏览器中访问同一套 Markdown 笔记的人
+- 希望把笔记部署在个人服务器、NAS 或家庭实验室的人
+- 需要清晰修改历史，但不想维护数据库的人
+
+## 工作方式
+
+```mermaid
+flowchart LR
+    Browser[浏览器编辑] --> Files[Markdown 与图片]
+    Editor[本地编辑器] --> Files
+    Files --> Git[Git 提交历史]
+    Git --> Remote[GitHub / Git 远端]
+    Remote --> Server[服务器定时同步]
+    Server --> Browser
+```
+
+笔记始终是普通 Markdown 文件，不依赖专用数据库。Compose 会把宿主机仓库挂载到容器的 `/repository`，因此笔记、图片和 Git 历史不会因容器重建而丢失。
+
+> [!IMPORTANT]
+> 网页编辑不会边输入边写盘。只有点击“保存并同步”后，MyNote 才会写入文件、创建 Git 提交并尝试推送远端，修改时机清晰可控。
 
 > [!WARNING]
 > MyNote 没有内置账户系统。不要把未受保护的服务端口直接暴露到公网。生产环境必须配置 Cloudflare Access、带认证的反向代理或其他可靠的访问控制。公开仓库中的笔记、图片及其 Git 历史对所有人可见，不要提交密码、私钥、访问令牌等秘密。
-
-## 功能
-
-- Markdown 编辑、实时预览与阅读模式
-- Markdown 工具栏，支持标题、粗体、列表、引用、链接、代码和图片
-- 图片选择、截图粘贴和拖拽上传
-- 笔记标题与正文搜索
-- YAML Frontmatter 标签和标签筛选
-- 响应式桌面端与移动端界面
-- 浅色、深色和跟随系统主题
-- Git 更新历史、提交详情和单篇笔记历史
-- 乐观锁检查，避免覆盖外部编辑器产生的修改
-- 保存、删除笔记时自动创建 Git 提交并推送
-- 删除笔记时同步删除该笔记的专属图片目录
-- Docker 部署和健康检查
-- systemd 定时拉取远端更新，并按需重建容器
 
 ## 技术栈
 
@@ -31,23 +111,6 @@ MyNote 是一个 **Markdown 文件优先、Git 驱动** 的个人笔记应用。
 - TypeScript
 - [Marked](https://marked.js.org/) 和 DOMPurify
 - Git、Docker Compose、systemd
-
-## 工作方式
-
-```text
-浏览器或本地编辑器
-        │
-        ▼
-notes/*.md 与 *.assets/
-        │
-        ▼
-Git commit → Git push → 远端仓库
-                           │
-                           ▼
-                  服务器定时拉取更新
-```
-
-笔记始终是普通 Markdown 文件，不依赖专用数据库。Compose 会把宿主机仓库挂载到容器的 `/repository`，因此笔记、图片和 Git 历史不会因容器重建而丢失。
 
 ## 项目结构
 
