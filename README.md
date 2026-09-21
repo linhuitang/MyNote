@@ -1,48 +1,52 @@
 <p align="center">
+  <strong>English</strong> · <a href="./README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
   <img src="./public/mynote-logo.png" width="96" height="96" alt="MyNote Logo">
 </p>
 
 <h1 align="center">MyNote</h1>
 
-<p align="center"><strong>把笔记留在自己的 Markdown 文件里，同时拥有现代网页编辑体验。</strong></p>
+<p align="center"><strong>Keep your notes as Markdown files without giving up a modern web editing experience.</strong></p>
 
 <p align="center">
-  浏览器里随手写，本地编辑器里深度改；点击保存，Git 自动记录并同步每一次变化。
+  Capture ideas in the browser, refine them in your favorite editor, and let Git record and sync every saved change.
 </p>
 
 <p align="center">
-  <a href="#快速体验">快速体验</a> ·
-  <a href="#功能一览">功能一览</a> ·
-  <a href="#docker-快速部署">Docker 部署</a> ·
-  <a href="#systemd-自动拉取与部署">自动更新</a>
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#docker-deployment">Docker Deployment</a> ·
+  <a href="#automatic-updates-with-systemd">Automatic Updates</a>
 </p>
 
-## 为什么选择 MyNote
+## Why MyNote
 
-许多笔记应用把内容保存在专用数据库或云服务中。MyNote 选择另一条路径：**文件才是数据本体，网页只是更舒服的编辑入口，Git 才是版本历史。**
+Many note-taking apps keep your content in a proprietary database or cloud service. MyNote takes a different approach: **your files are the source of truth, the web app is a convenient editing interface, and Git is the version history.**
 
-> **MyNote = Markdown 文件 + 网页编辑器 + Git 历史 + 自托管部署**
+> **MyNote = Markdown files + web editor + Git history + self-hosting**
 
-| 核心优势 | 你能得到什么 |
+| Core benefit | What it gives you |
 | --- | --- |
-| 📄 **文件属于你** | 每篇笔记都是普通 `.md` 文件，不被数据库或私有格式锁定 |
-| ✍️ **两种编辑方式** | 可在网页中编辑，也可直接使用 VS Code、Obsidian 或其他文本编辑器 |
-| 🕘 **每次修改可追溯** | 保存、删除都会形成 Git 提交，可查看整库历史和单篇笔记历史 |
-| 🔄 **多端同步简单透明** | 本地提交到 GitHub，服务器自动拉取；网页保存也能直接推送 |
-| 🖼️ **不只支持纯文字** | 标签、全文搜索、图片粘贴、拖拽上传和 Markdown 预览全部内置 |
-| 🏠 **运行位置由你决定** | 可以只在本机运行，也可以使用 Docker 部署到自己的服务器 |
+| 📄 **You own the files** | Every note is a plain `.md` file, with no proprietary format or database lock-in |
+| ✍️ **Two ways to edit** | Write in the web app or use VS Code, Obsidian, or any other text editor |
+| 🕘 **Every change is traceable** | Saving and deleting create Git commits, with repository-wide and per-note history |
+| 🔄 **Transparent multi-device sync** | Push locally edited files to GitHub and let the server pull them, or push directly from the web app |
+| 🖼️ **More than plain text** | Tags, full-text search, image paste, drag-and-drop upload, and Markdown preview are built in |
+| 🏠 **Run it where you want** | Use it locally or deploy it to your own server with Docker |
 
-### 和常见笔记方案有什么不同
+### How it differs from typical web note apps
 
-| 常见网页笔记应用 | MyNote |
+| Typical web note app | MyNote |
 | --- | --- |
-| 内容保存在数据库中 | 内容直接保存在 `notes/` 目录 |
-| 通常只能在指定客户端编辑 | 浏览器和任意 Markdown 编辑器都能编辑 |
-| 数据导出后才能迁移 | 复制文件夹或克隆仓库即可迁移 |
-| 历史版本由平台决定 | Git 完整记录历史，可自行备份和恢复 |
-| 服务停止后可能难以继续使用 | Markdown 文件始终可以独立读取 |
+| Stores content in a database | Stores content directly in `notes/` |
+| Usually limits editing to its own clients | Works in the browser and in any Markdown editor |
+| Requires an export before migration | Move it by copying the folder or cloning the repository |
+| Controls how much history is retained | Uses Git for complete, portable history |
+| May become unusable when the service shuts down | Markdown files always remain independently readable |
 
-## 快速体验
+## Quick Start
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/MyNote.git
@@ -51,121 +55,121 @@ npm ci
 npm run dev
 ```
 
-打开 `http://localhost:3000`，新建第一篇笔记。无需数据库，也无需初始化数据表。
+Open `http://localhost:3000` and create your first note. No database or schema initialization is required.
 
 > [!TIP]
-> `YOUR_USERNAME` 需要替换为实际的 GitHub 用户名。准备保存私人笔记时，建议把项目放入你自己的 **Private 仓库**；公共仓库及公共 Fork 不适合存放私人内容。
+> Replace `YOUR_USERNAME` with the actual GitHub account name. If you intend to store private notes, put MyNote in your own **private repository**. Public repositories and public forks are not suitable for private content.
 
-## 功能一览
+## Features
 
-| 写作体验 | 笔记管理 |
+| Writing experience | Note management |
 | --- | --- |
-| Markdown 编辑与实时预览 | 标题和正文全文搜索 |
-| 阅读、编辑模式分离 | YAML Frontmatter 标签与筛选 |
-| 常用 Markdown 格式工具栏 | 12 条一批的触底加载 |
-| 自动适配桌面端和移动端 | 删除确认与关联图片清理 |
-| 浅色、深色和跟随系统主题 | 外部编辑冲突检测 |
-| 图片选择、截图粘贴和拖拽上传 | 图片使用标准 Markdown 相对路径 |
+| Markdown editing with live preview | Full-text search across titles and content |
+| Separate reading and editing modes | YAML Frontmatter tags and tag filters |
+| Toolbar for common Markdown syntax | Infinite loading in batches of 12 notes |
+| Responsive desktop and mobile layouts | Delete confirmation and related-image cleanup |
+| Light, dark, and system themes | External edit conflict detection |
+| File picker, screenshot paste, and drag-and-drop image upload | Standard relative Markdown image paths |
 
-| Git 与同步 | 部署与运维 |
+| Git and sync | Deployment and operations |
 | --- | --- |
-| 保存后自动提交并推送 | 多阶段 Docker 镜像 |
-| 全部更新历史与提交 Diff | 默认仅监听 `127.0.0.1:3100` |
-| 单篇笔记详细历史 | Docker 健康检查 |
-| 文件版本校验，避免误覆盖 | systemd 每分钟检查远端更新 |
-| 源码和笔记使用同一套 Git 流程 | 仅笔记变化时无需重建容器 |
+| Automatic commit and push after saving | Multi-stage Docker image |
+| Repository history and commit diffs | Binds to `127.0.0.1:3100` by default |
+| Detailed history for each note | Docker health check |
+| File version checks to prevent accidental overwrites | systemd checks the remote every minute |
+| One Git workflow for source code and notes | Note-only changes do not rebuild the container |
 
-## 适合谁
+## Who It Is For
 
-- 希望自己掌握笔记文件，而不是依赖某个云笔记平台的人
-- 已经习惯 Markdown、Git、VS Code 或 Obsidian 的开发者
-- 想在手机和电脑浏览器中访问同一套 Markdown 笔记的人
-- 希望把笔记部署在个人服务器、NAS 或家庭实验室的人
-- 需要清晰修改历史，但不想维护数据库的人
+- People who want to own their note files instead of depending on a cloud note platform
+- Developers already comfortable with Markdown, Git, VS Code, or Obsidian
+- Anyone who wants the same Markdown notes available in desktop and mobile browsers
+- People running personal servers, NAS devices, or home labs
+- Users who need clear edit history without maintaining a database
 
-## 工作方式
+## How It Works
 
 ```mermaid
 flowchart LR
-    Browser[浏览器编辑] --> Files[Markdown 与图片]
-    Editor[本地编辑器] --> Files
-    Files --> Git[Git 提交历史]
-    Git --> Remote[GitHub / Git 远端]
-    Remote --> Server[服务器定时同步]
+    Browser[Edit in browser] --> Files[Markdown and images]
+    Editor[Edit locally] --> Files
+    Files --> Git[Git history]
+    Git --> Remote[GitHub / Git remote]
+    Remote --> Server[Scheduled server sync]
     Server --> Browser
 ```
 
-笔记始终是普通 Markdown 文件，不依赖专用数据库。Compose 会把宿主机仓库挂载到容器的 `/repository`，因此笔记、图片和 Git 历史不会因容器重建而丢失。
+Notes remain ordinary Markdown files and do not depend on a dedicated database. Docker Compose mounts the host repository at `/repository`, so notes, images, and Git history survive container rebuilds.
 
 > [!IMPORTANT]
-> 网页编辑不会边输入边写盘。只有点击“保存并同步”后，MyNote 才会写入文件、创建 Git 提交并尝试推送远端，修改时机清晰可控。
+> The web editor does not continuously write while you type. MyNote writes the file, creates a Git commit, and attempts to push only after you click **Save and sync**, making the exact save point explicit.
 
 > [!WARNING]
-> MyNote 没有内置账户系统。不要把未受保护的服务端口直接暴露到公网。生产环境必须配置 Cloudflare Access、带认证的反向代理或其他可靠的访问控制。公开仓库中的笔记、图片及其 Git 历史对所有人可见，不要提交密码、私钥、访问令牌等秘密。
+> MyNote does not include a built-in account system. Never expose an unprotected application port directly to the internet. Production deployments must use Cloudflare Access, an authenticated reverse proxy, or another reliable access-control layer. Notes, images, and Git history in a public repository are visible to everyone. Never commit passwords, private keys, access tokens, or other secrets.
 
-## 技术栈
+## Technology Stack
 
 - [Nuxt](https://nuxt.com/) 4
 - [Vue](https://vuejs.org/) 3
 - [Nitro](https://nitro.build/)
 - TypeScript
-- [Marked](https://marked.js.org/) 和 DOMPurify
-- Git、Docker Compose、systemd
+- [Marked](https://marked.js.org/) and DOMPurify
+- Git, Docker Compose, and systemd
 
-## 项目结构
+## Project Structure
 
 ```text
 MyNote/
-├── app/                    # Vue 页面、组件和样式
-├── server/                 # Nitro API、文件操作和 Git 同步
-├── shared/                 # 前后端共享类型与工具
-├── notes/                  # Markdown 笔记与图片资源
-├── public/                 # Logo 和站点图标
-├── docker/                 # 容器入口脚本
-├── deploy/                 # systemd 自动同步脚本
-├── compose.yml             # 基础 Docker Compose 配置
-├── compose.github.yml      # GitHub SSH Secret 扩展配置
+├── app/                    # Vue pages, components, and styles
+├── server/                 # Nitro API, file operations, and Git sync
+├── shared/                 # Types and utilities shared by client and server
+├── notes/                  # Markdown notes and image assets
+├── public/                 # Logo and site icons
+├── docker/                 # Container entrypoint scripts
+├── deploy/                 # systemd automatic sync scripts
+├── compose.yml             # Base Docker Compose configuration
+├── compose.github.yml      # GitHub SSH secret extension
 └── Dockerfile
 ```
 
-## 笔记格式
+## Note Format
 
-标题默认读取第一个一级标题，标签保存在 YAML Frontmatter 中：
+The first level-one heading is used as the title by default. Tags are stored in YAML Frontmatter:
 
 ```md
 ---
 tags: [Nuxt, Docker]
 ---
 
-# 部署记录
+# Deployment Notes
 
-这里是正文。
+Write your note here.
 ```
 
-网页上传的图片保存在与笔记同名的专属目录中：
+Images uploaded through the web app are stored in a dedicated directory named after the note:
 
 ```text
 notes/
-├── 部署记录.md
-└── 部署记录.assets/
+├── Deployment Notes.md
+└── Deployment Notes.assets/
     └── 20260921131859-ab12cd34.webp
 ```
 
-Markdown 使用相对路径引用图片，所以在 VS Code、Obsidian 等外部编辑器中也可以正常显示：
+Images use relative Markdown paths, so they also render in VS Code, Obsidian, and other external editors:
 
 ```md
-![部署截图](./部署记录.assets/20260921131859-ab12cd34.webp)
+![Deployment screenshot](./Deployment Notes.assets/20260921131859-ab12cd34.webp)
 ```
 
-## 本地开发
+## Local Development
 
-### 环境要求
+### Requirements
 
-- Node.js 22 或更高版本
+- Node.js 22 or later
 - npm
 - Git
 
-### 启动项目
+### Start the Project
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/MyNote.git
@@ -175,49 +179,49 @@ cp .env.example .env
 npm run dev
 ```
 
-浏览器访问 `http://localhost:3000`。
+Open `http://localhost:3000` in your browser.
 
-默认读取项目中的 `notes` 目录。如需使用其他目录，修改 `.env`：
+MyNote reads the repository's `notes` directory by default. To use a different directory, edit `.env`:
 
 ```dotenv
 NUXT_NOTES_DIRECTORY=./notes
 ```
 
-常用命令：
+Common commands:
 
 ```bash
-npm run dev        # 启动开发服务器
-npm run typecheck  # TypeScript 检查
-npm run build      # 生产构建
-npm run preview    # 预览生产构建
+npm run dev        # Start the development server
+npm run typecheck  # Run TypeScript checks
+npm run build      # Create a production build
+npm run preview    # Preview the production build
 ```
 
-## 保存与 Git 同步
+## Saving and Git Sync
 
-点击“保存并同步”后，服务端会依次执行：
+After you click **Save and sync**, the server performs these steps:
 
-1. 比较笔记版本，检查文件是否被其他程序修改；
-2. 原子写入 Markdown 文件，并保存本次新增的图片；
-3. 将当前笔记及其专属图片目录加入 Git 暂存区；
-4. 创建 Git 提交；
-5. 如果仓库存在远端，则运行 `git push`。
+1. Compares note versions to detect changes made by another editor.
+2. Writes the Markdown file atomically and saves newly uploaded images.
+3. Stages the note and its dedicated asset directory in Git.
+4. Creates a Git commit.
+5. Runs `git push` if the repository has a remote.
 
-删除笔记时，其同名 `.assets` 目录会一起删除并写入同一次 Git 提交。文件写入成功但 Git 提交或推送失败时，应用会保留本地修改并在界面中显示错误原因。
+Deleting a note also deletes its matching `.assets` directory and records both operations in the same commit. If the file is written successfully but the Git commit or push fails, MyNote keeps the local change and displays the error in the interface.
 
-## Docker 快速部署
+## Docker Deployment
 
-适合只在服务器本机使用，或者自行配置安全入口的场景。
+This setup is suitable for local server access or for use behind a secure access layer that you configure separately.
 
-### 1. 准备环境
+### 1. Prepare the Server
 
-服务器需要：
+The server needs:
 
 - Linux
 - Git
 - Docker Engine
-- Docker Compose Plugin（可以运行 `docker compose version`）
+- Docker Compose Plugin (`docker compose version` must work)
 
-### 2. 克隆并配置
+### 2. Clone and Configure
 
 ```bash
 sudo mkdir -p /opt/MyNote
@@ -227,7 +231,7 @@ cd /opt/MyNote
 cp .env.docker.example .env
 ```
 
-编辑 `.env`：
+Edit `.env`:
 
 ```dotenv
 MYNOTE_BIND_ADDRESS=127.0.0.1
@@ -238,13 +242,13 @@ GIT_USER_EMAIL=mynote@example.com
 GITHUB_DEPLOY_KEY_PATH=/opt/MyNote/docker-secrets/github_deploy_key
 ```
 
-### 3. 构建并启动
+### 3. Build and Start
 
 ```bash
 docker compose up -d --build
 ```
 
-### 4. 检查运行状态
+### 4. Check the Deployment
 
 ```bash
 docker compose ps
@@ -252,20 +256,20 @@ docker compose logs --tail=100 mynote
 curl http://127.0.0.1:3100/api/notes
 ```
 
-默认只监听 `127.0.0.1:3100`，不会直接接受公网连接。不要为了方便把 `MYNOTE_BIND_ADDRESS` 改为 `0.0.0.0`，除非服务器前方已经有完善的防火墙和身份认证。
+By default, MyNote listens only on `127.0.0.1:3100` and does not accept direct public connections. Do not change `MYNOTE_BIND_ADDRESS` to `0.0.0.0` merely for convenience unless a properly configured firewall and authentication layer already protect the server.
 
-停止或重启：
+Stop or restart the application:
 
 ```bash
 docker compose stop
 docker compose restart
 ```
 
-## 配置 GitHub 自动推送
+## Configure Automatic Pushes to GitHub
 
-如果需要在网页保存后自动推送到 GitHub，推荐为这个仓库创建一把独立的、具有写权限的 Deploy Key。不要使用能够访问整个 GitHub 账户的个人 SSH Key。
+To push web edits automatically, create a dedicated Deploy Key with write permission for this repository. Do not use a personal SSH key that grants access to your entire GitHub account.
 
-### 1. 创建仓库专用密钥
+### 1. Create a Repository-Specific Key
 
 ```bash
 cd /opt/MyNote
@@ -274,30 +278,30 @@ ssh-keygen -t ed25519 -C "mynote-deploy" -f docker-secrets/github_deploy_key
 chmod 600 docker-secrets/github_deploy_key
 ```
 
-该命令会生成：
+This creates:
 
 ```text
-docker-secrets/github_deploy_key      # 私钥，不要复制或提交
-docker-secrets/github_deploy_key.pub  # 公钥，添加到 GitHub
+docker-secrets/github_deploy_key      # Private key — never copy or commit it
+docker-secrets/github_deploy_key.pub  # Public key — add this to GitHub
 ```
 
-`docker-secrets/` 已被 `.gitignore` 和 `.dockerignore` 排除。
+`docker-secrets/` is excluded by both `.gitignore` and `.dockerignore`.
 
-### 2. 添加 GitHub Deploy Key
+### 2. Add the GitHub Deploy Key
 
-打开 GitHub 仓库：
+Open the GitHub repository and go to:
 
 ```text
 Settings → Deploy keys → Add deploy key
 ```
 
-填写名称，粘贴以下命令输出的公钥，并勾选 **Allow write access**：
+Enter a name, paste the output of the following command, and enable **Allow write access**:
 
 ```bash
 cat /opt/MyNote/docker-secrets/github_deploy_key.pub
 ```
 
-### 3. 改用 SSH 远端
+### 3. Switch the Remote to SSH
 
 ```bash
 cd /opt/MyNote
@@ -305,80 +309,80 @@ git remote set-url origin git@github.com:YOUR_USERNAME/MyNote.git
 ssh -i /opt/MyNote/docker-secrets/github_deploy_key -o IdentitiesOnly=yes -T git@github.com
 ```
 
-看到“successfully authenticated”表示密钥可用。GitHub 不提供 Shell 登录，因此后半句提示没有 Shell access 是正常现象。
+A “successfully authenticated” message confirms that the key works. GitHub does not provide shell access, so the following “no shell access” message is expected.
 
-### 4. 配置密钥路径
+### 4. Configure the Key Path
 
-确认 `.env` 中使用绝对路径，不能使用 `~`：
+Make sure `.env` uses an absolute path rather than `~`:
 
 ```dotenv
 GITHUB_DEPLOY_KEY_PATH=/opt/MyNote/docker-secrets/github_deploy_key
 ```
 
-### 5. 使用 GitHub Compose 扩展启动
+### 5. Start with the GitHub Compose Extension
 
 ```bash
 docker compose -f compose.yml -f compose.github.yml up -d --build
 ```
 
-`compose.github.yml` 会通过 Docker Secret 以只读方式把私钥挂载到容器中，并为 Git 命令配置该密钥。
+`compose.github.yml` mounts the private key as a read-only Docker Secret and configures Git commands to use that key.
 
-## systemd 自动拉取与部署
+## Automatic Updates with systemd
 
-项目提供了安装脚本，可每分钟检查一次 `origin/main`：
+The included installer creates a timer that checks `origin/main` every minute:
 
-- 只有 `notes/` 变化：仓库快进后直接生效，不重建容器；
-- 应用源码或部署配置变化：自动重新构建并启动容器；
-- 工作区存在未提交修改或分支发生分叉：停止同步，避免覆盖数据；
-- 构建失败：不会更新已部署版本标记，下次运行会继续重试。
+- When only `notes/` changes, the repository fast-forwards and the changes become available without rebuilding the container.
+- When application source or deployment configuration changes, the container is rebuilt and restarted automatically.
+- When the working tree contains uncommitted changes or the branches have diverged, synchronization stops instead of overwriting data.
+- When a build fails, the deployed revision marker is not updated, so the next timer run retries the build.
 
-### 安装前提
+### Prerequisites
 
-1. 项目已经克隆到服务器；
-2. `origin` 指向需要同步的 GitHub 仓库；
-3. Deploy Key 已添加到 GitHub 并允许写入；
-4. 私钥位于 `docker-secrets/github_deploy_key`，或者 `.env` 已配置其他绝对路径；
-5. 已安装 `docker`、`git`、`flock` 和 `systemctl`。
+1. The project has been cloned to the server.
+2. `origin` points to the GitHub repository that should be synchronized.
+3. The Deploy Key has been added to GitHub with write access.
+4. The private key is stored at `docker-secrets/github_deploy_key`, or another absolute path is configured in `.env`.
+5. `docker`, `git`, `flock`, and `systemctl` are installed.
 
-### 一键安装
+### One-Command Installation
 
 ```bash
 cd /opt/MyNote
 sudo ./deploy/install-systemd-sync.sh
 ```
 
-安装器会：
+The installer:
 
-1. 在缺失时创建 `.env`；
-2. 验证 Deploy Key 路径和 Docker Compose 配置；
-3. 首次构建并启动 MyNote；
-4. 安装 `mynote-sync.service` 和 `mynote-sync.timer`；
-5. 每 60 秒检查一次 GitHub 更新。
+1. Creates `.env` if it does not exist.
+2. Verifies the Deploy Key path and Docker Compose configuration.
+3. Builds and starts MyNote for the first time.
+4. Installs `mynote-sync.service` and `mynote-sync.timer`.
+5. Checks GitHub for updates every 60 seconds.
 
-### 管理定时同步
+### Manage Automatic Sync
 
 ```bash
-# 查看定时器
+# Inspect the timer
 systemctl status mynote-sync.timer
 systemctl list-timers mynote-sync.timer
 
-# 立即执行一次同步
+# Run synchronization immediately
 systemctl start mynote-sync.service
 
-# 查看最近日志
+# Show recent logs
 journalctl -u mynote-sync.service -n 100 --no-pager
 
-# 持续查看日志
+# Follow logs
 journalctl -u mynote-sync.service -f
 
-# 暂停和恢复
+# Pause and resume
 systemctl stop mynote-sync.timer
 systemctl start mynote-sync.timer
 ```
 
-## 从本地编辑器同步到服务器
+## Sync from a Local Editor to the Server
 
-本地修改源码或 `notes` 后：
+After changing the source code or `notes` locally:
 
 ```bash
 git add -A
@@ -386,57 +390,57 @@ git commit -m "Update notes"
 git push origin main
 ```
 
-服务器上的 systemd timer 会在下一次检查时拉取更新。笔记与图片变更会直接出现在挂载目录中；源码变更会触发 Docker 重建。
+The server's systemd timer pulls the update on its next run. Note and image changes appear directly in the mounted directory, while source-code changes trigger a Docker rebuild.
 
-网页端保存也会创建并推送提交。如果本地和网页端同时产生提交，后推送的一方可能因为远端已有新提交而失败。建议避免同时编辑；发生冲突时，在对应仓库中先检查修改，再执行：
+Saving from the web app also creates and pushes commits. If a local editor and the web app produce commits concurrently, the later push may fail because the remote already has a new commit. Avoid editing from both places at the same time. If a conflict occurs, inspect the repository changes first, then run:
 
 ```bash
 git pull --rebase origin main
 git push origin main
 ```
 
-不要在未确认工作区内容前运行会丢弃修改的 Git 命令。
+Do not run Git commands that discard changes until you have inspected the working tree.
 
-## 安全访问方式
+## Secure Access
 
-### SSH 隧道
+### SSH Tunnel
 
-不配置公网域名时，可以从本机建立 SSH 隧道：
+If you do not want to configure a public domain, create an SSH tunnel from your local machine:
 
 ```bash
 ssh -L 3100:127.0.0.1:3100 USER@SERVER_IP
 ```
 
-随后访问 `http://127.0.0.1:3100`。
+Then open `http://127.0.0.1:3100`.
 
-### Cloudflare Tunnel 与 Access
+### Cloudflare Tunnel and Access
 
-推荐流程：
+Recommended setup:
 
-1. 在 Cloudflare Zero Trust 中创建 Self-hosted Application；
-2. 为应用域名设置只允许本人邮箱或身份组访问的 Allow Policy；
-3. 启用 MFA，并避免 `Everyone` 或 `Bypass` 规则；
-4. 创建 Cloudflare Tunnel 并在服务器安装 `cloudflared`；
-5. 将 Public Hostname 的 Service 指向 `http://127.0.0.1:3100`；
-6. 确认首页和 `/api/*` 都受到同一个 Access Application 保护；
-7. 保持 3100 端口只绑定 `127.0.0.1`，不要再建立绕过 Access 的公网入口。
+1. Create a Self-hosted Application in Cloudflare Zero Trust.
+2. Add an Allow Policy restricted to your own email address or identity group.
+3. Enable MFA and avoid `Everyone` or `Bypass` rules.
+4. Create a Cloudflare Tunnel and install `cloudflared` on the server.
+5. Point the Public Hostname service to `http://127.0.0.1:3100`.
+6. Confirm that both the home page and `/api/*` are protected by the same Access Application.
+7. Keep port 3100 bound to `127.0.0.1`; do not create another public route that bypasses Access.
 
-MyNote 自身不会验证用户身份，Cloudflare Access 或其他上游认证是生产部署的安全边界。
+MyNote does not authenticate users itself. Cloudflare Access or another upstream authentication system is the security boundary for production deployments.
 
-## 环境变量
+## Environment Variables
 
-| 变量 | 默认值 | 说明 |
+| Variable | Default | Description |
 | --- | --- | --- |
-| `NUXT_NOTES_DIRECTORY` | `./notes` | 非 Docker 环境中的笔记目录 |
-| `MYNOTE_BIND_ADDRESS` | `127.0.0.1` | Docker 在宿主机监听的地址 |
-| `MYNOTE_PORT` | `3100` | Docker 在宿主机监听的端口 |
-| `MYNOTE_APP_NAME` | `MyNote` | 页面中显示的应用名称 |
-| `GIT_USER_NAME` | `MyNote` | 自动提交使用的 Git 用户名 |
-| `GIT_USER_EMAIL` | `mynote@localhost` | 自动提交使用的 Git 邮箱 |
-| `GITHUB_DEPLOY_KEY_PATH` | `./docker-secrets/github_deploy_key` | GitHub Deploy Key 私钥路径 |
-| `MYNOTE_REPOSITORY` | 安装时写入 | systemd 同步使用的仓库路径 |
+| `NUXT_NOTES_DIRECTORY` | `./notes` | Notes directory outside Docker |
+| `MYNOTE_BIND_ADDRESS` | `127.0.0.1` | Host address used by Docker |
+| `MYNOTE_PORT` | `3100` | Host port used by Docker |
+| `MYNOTE_APP_NAME` | `MyNote` | Application name displayed in the UI |
+| `GIT_USER_NAME` | `MyNote` | Git author name for automatic commits |
+| `GIT_USER_EMAIL` | `mynote@localhost` | Git author email for automatic commits |
+| `GITHUB_DEPLOY_KEY_PATH` | `./docker-secrets/github_deploy_key` | Path to the GitHub Deploy Key private key |
+| `MYNOTE_REPOSITORY` | Set by the installer | Repository path used by systemd sync |
 
-容器内部固定使用：
+The container always uses:
 
 ```text
 NUXT_NOTES_DIRECTORY=/repository/notes
@@ -444,11 +448,11 @@ MYNOTE_REPOSITORY_DIRECTORY=/repository
 NITRO_PORT=3000
 ```
 
-通常不需要修改这些容器内部变量。
+These container-internal variables normally do not need to be changed.
 
-## 备份与恢复
+## Backup and Recovery
 
-GitHub 远端是主要的异地备份，但尚未成功推送的提交只存在于服务器本地。建议定期检查：
+The GitHub remote is the primary off-site backup, but commits that have not been pushed successfully exist only on the server. Check the repository regularly:
 
 ```bash
 cd /opt/MyNote
@@ -458,29 +462,29 @@ git fetch origin
 git status -sb
 ```
 
-恢复到新服务器时，只需重新克隆仓库、配置 Deploy Key 和 `.env`，然后重新运行安装脚本。
+To restore MyNote on a new server, clone the repository, configure the Deploy Key and `.env`, and run the installation script again.
 
-删除笔记后，旧内容仍可能存在于 Git 历史。若笔记中误提交了密码、Token 或私钥，应先撤销并轮换凭据，再按 GitHub 的敏感数据清理流程重写历史。
+After a note is deleted, its old content may remain in Git history. If a password, token, or private key is committed accidentally, revoke and rotate the credential first, then rewrite the repository history by following GitHub's sensitive-data removal guidance.
 
-## 常见问题
+## Troubleshooting
 
-### 3100 端口已被占用
+### Port 3100 Is Already in Use
 
-修改 `.env`：
+Edit `.env`:
 
 ```dotenv
 MYNOTE_PORT=3200
 ```
 
-然后重新启动：
+Then restart:
 
 ```bash
 docker compose -f compose.yml -f compose.github.yml up -d
 ```
 
-### 容器无法读取 SSH Key
+### The Container Cannot Read the SSH Key
 
-检查路径和权限：
+Check the path and permissions:
 
 ```bash
 grep '^GITHUB_DEPLOY_KEY_PATH=' .env
@@ -488,9 +492,9 @@ ls -l /opt/MyNote/docker-secrets/github_deploy_key
 chmod 600 /opt/MyNote/docker-secrets/github_deploy_key
 ```
 
-路径必须是宿主机上的绝对路径，并且文件必须存在。
+The path must be absolute on the host, and the file must exist.
 
-### 网页保存成功但 Git 推送失败
+### The Web Save Succeeds but Git Push Fails
 
 ```bash
 cd /opt/MyNote
@@ -499,9 +503,9 @@ git log --oneline --decorate -5
 git remote -v
 ```
 
-如果远端存在新的提交，先确认没有未提交修改，再使用 `git pull --rebase origin main`。如果 SSH 验证失败，重新检查 Deploy Key 和远端地址。
+If the remote has new commits, first confirm that there are no uncommitted changes, then use `git pull --rebase origin main`. If SSH authentication fails, recheck the Deploy Key and remote URL.
 
-### systemd 没有自动更新
+### systemd Does Not Update Automatically
 
 ```bash
 systemctl status mynote-sync.timer
@@ -509,9 +513,9 @@ systemctl status mynote-sync.service
 journalctl -u mynote-sync.service -n 100 --no-pager
 ```
 
-同步脚本会主动拒绝覆盖脏工作区或分叉分支，日志中会说明停止原因。
+The sync script intentionally refuses to overwrite a dirty working tree or a diverged branch. The log explains why synchronization stopped.
 
-### 查看容器健康状态
+### Inspect Container Health
 
 ```bash
 docker inspect --format '{{json .State.Health}}' mynote
@@ -519,9 +523,9 @@ docker compose logs --tail=100 mynote
 curl http://127.0.0.1:3100/api/notes
 ```
 
-## 参与贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request。提交前请至少运行：
+Issues and pull requests are welcome. Before submitting a change, run at least:
 
 ```bash
 npm ci
@@ -529,8 +533,8 @@ npm run typecheck
 npm run build
 ```
 
-请不要在示例、测试文件或提交历史中包含真实笔记、服务器地址、密钥或个人数据。
+Do not include real notes, server addresses, keys, or personal data in examples, test files, or commit history.
 
 ## License
 
-[MIT](./LICENSE)
+MyNote is released under the [MIT License](./LICENSE).
