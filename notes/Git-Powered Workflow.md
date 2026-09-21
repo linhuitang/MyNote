@@ -1,5 +1,10 @@
 ---
+title: Git-Powered Workflow
+description: Learn how MyNote uses Git as a transparent version and synchronization layer.
+date: 2026-09-19
+updated: 2026-09-21
 tags: [Git, Workflow]
+draft: false
 ---
 
 # Git-Powered Workflow
@@ -33,4 +38,3 @@ A server configured with the included systemd timer will pull the new commit aut
 MyNote stores a revision identifier when it loads a note. If the file changes before you save, the editor warns you instead of silently overwriting the newer version.
 
 For the clearest history, avoid editing the same note in the browser and a local editor at the same time.
-

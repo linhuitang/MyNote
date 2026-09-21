@@ -1,5 +1,15 @@
 const frontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/
 
+export interface MarkdownMetadata {
+  title?: string
+  description?: string
+  date?: string
+  updated?: string
+  cover?: string
+  draft: boolean
+  tags: string[]
+}
+
 export function normaliseTags(tags: string[]): string[] {
   const seen = new Set<string>()
   const result: string[] = []
@@ -22,6 +32,28 @@ function unquote(value: string): string {
     return trimmed.slice(1, -1)
   }
   return trimmed
+}
+
+function frontmatterValue(content: string, key: string): string | undefined {
+  const match = content.match(frontmatterPattern)
+  if (!match?.[1]) return undefined
+  const line = match[1].split(/\r?\n/).find(item => new RegExp(`^${key}\\s*:`, 'i').test(item))
+  if (!line) return undefined
+  const value = line.replace(new RegExp(`^${key}\\s*:\\s*`, 'i'), '').trim()
+  return value ? unquote(value) : undefined
+}
+
+export function metadataFromMarkdown(content: string): MarkdownMetadata {
+  const draftValue = frontmatterValue(content, 'draft')?.toLocaleLowerCase()
+  return {
+    title: frontmatterValue(content, 'title'),
+    description: frontmatterValue(content, 'description'),
+    date: frontmatterValue(content, 'date'),
+    updated: frontmatterValue(content, 'updated'),
+    cover: frontmatterValue(content, 'cover'),
+    draft: draftValue === 'true' || draftValue === 'yes' || draftValue === '1',
+    tags: tagsFromMarkdown(content),
+  }
 }
 
 export function tagsFromMarkdown(content: string): string[] {

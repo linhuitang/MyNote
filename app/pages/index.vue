@@ -6,6 +6,7 @@ const route = useRoute()
 const router = useRouter()
 const { t, intlLocale } = useI18n()
 const readOnly = useReadOnly()
+const { isBlog } = useAppMode()
 useHead({ title: config.public.appName })
 
 const searchQuery = ref('')
@@ -145,11 +146,110 @@ function formatDate(value: string): string {
   }).format(new Date(value))
 }
 
+function formatBlogDate(value: string): string {
+  return new Intl.DateTimeFormat(intlLocale.value, {
+    year: 'numeric', month: 'long', day: 'numeric',
+  }).format(new Date(value))
+}
+
+function coverUrl(note: NoteSummary): string {
+  const cover = note.cover
+  if (!cover || /^(?:[a-z][a-z\d+.-]*:|\/\/|\/|#)/i.test(cover)) return cover || ''
+
+  const segments = note.path.split('/').slice(0, -1)
+  for (const segment of cover.replaceAll('\\', '/').split('/')) {
+    if (!segment || segment === '.') continue
+    if (segment === '..') segments.pop()
+    else segments.push(segment)
+  }
+  return `/api/note-assets/${segments.map(encodeURIComponent).join('/')}`
+}
+
 await resetNotes()
 </script>
 
 <template>
-  <div class="page-shell">
+  <div v-if="isBlog" class="page-shell blog-shell">
+    <BlogHeader />
+
+    <main class="blog-home">
+      <section class="blog-hero">
+        <p class="eyebrow">{{ t('blog.latest') }}</p>
+        <h1>{{ config.public.appName }}</h1>
+        <p>{{ config.public.blogDescription }}</p>
+      </section>
+
+      <section class="blog-discovery">
+        <label class="search-box blog-search-box">
+          <span aria-hidden="true">⌕</span>
+          <input
+            v-model="searchQuery"
+            type="search"
+            autocomplete="off"
+            :placeholder="t('blog.searchPlaceholder')"
+            :aria-label="t('blog.searchLabel')"
+          >
+          <button v-if="searchQuery" type="button" :aria-label="t('home.clearSearch')" @click="searchQuery = ''">×</button>
+        </label>
+        <span class="blog-post-count">{{ t('blog.posts', { count: totalNotes }) }}</span>
+      </section>
+
+      <div id="tags" v-if="availableTags.length" class="tag-filter blog-tag-filter" :aria-label="t('home.filterByTag')">
+        <span class="tag-filter-label">{{ t('blog.tags') }}</span>
+        <button type="button" :class="{ active: !selectedTag }" @click="selectedTag = ''">{{ t('home.all') }}</button>
+        <button
+          v-for="tag in availableTags"
+          :key="tag"
+          type="button"
+          :class="{ active: selectedTag === tag }"
+          @click="selectedTag = selectedTag === tag ? '' : tag"
+        >
+          {{ tag }}
+        </button>
+      </div>
+
+      <div v-if="loading" class="page-message">{{ t('home.loading') }}</div>
+      <div v-else-if="loadError" class="page-message error-message">
+        <p>{{ t('home.loadFailed') }}</p>
+        <button class="secondary-button" @click="resetNotes">{{ t('common.retry') }}</button>
+      </div>
+      <template v-else-if="notes.length">
+        <section id="posts" class="blog-post-list" :aria-label="t('blog.archive')">
+          <NuxtLink v-for="post in notes" :key="post.path" :to="detailUrl(post.path)" class="blog-post-card">
+            <div v-if="post.cover" class="blog-post-cover">
+              <img :src="coverUrl(post)" :alt="post.title">
+            </div>
+            <div class="blog-post-content">
+              <div class="blog-post-meta">
+                <time :datetime="post.publishedAt || post.updatedAt">{{ formatBlogDate(post.publishedAt || post.updatedAt) }}</time>
+                <span v-for="tag in post.tags" :key="tag" class="note-tag">{{ tag }}</span>
+              </div>
+              <h2>{{ post.title }}</h2>
+              <p>{{ post.description || post.excerpt }}</p>
+              <span class="blog-read-link">{{ t('blog.readArticle') }} <span aria-hidden="true">→</span></span>
+            </div>
+          </NuxtLink>
+        </section>
+        <div v-if="loadMoreError" class="load-more-error">
+          <span>{{ t('home.loadMoreFailed') }}</span>
+          <button type="button" @click="loadMoreNotes">{{ t('common.retry') }}</button>
+        </div>
+        <InfiniteScrollTrigger
+          v-else
+          :has-more="hasMoreNotes"
+          :loading="loadingMore"
+          :label="t('home.loadingMore')"
+          @load="loadMoreNotes"
+        />
+      </template>
+      <section v-else class="empty-library blog-empty">
+        <h2>{{ debouncedQuery || selectedTag ? t('blog.noResults') : t('blog.noPosts') }}</h2>
+        <button v-if="debouncedQuery || selectedTag" class="secondary-button" @click="searchQuery = ''; selectedTag = ''">{{ t('home.clearFilters') }}</button>
+      </section>
+    </main>
+  </div>
+
+  <div v-else class="page-shell">
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">

@@ -12,6 +12,11 @@ export interface NoteSummary {
   tags: string[]
   updatedAt: string
   revision: string
+  description?: string
+  publishedAt?: string
+  contentUpdatedAt?: string
+  cover?: string
+  draft?: boolean
 }
 
 export interface NoteDocument extends NoteSummary {

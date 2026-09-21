@@ -248,6 +248,8 @@ cp .env.docker.example .env
 MYNOTE_BIND_ADDRESS=127.0.0.1
 MYNOTE_PORT=3100
 MYNOTE_APP_NAME=MyNote
+MYNOTE_MODE=notes
+MYNOTE_BLOG_DESCRIPTION=A Git-powered Markdown blog.
 MYNOTE_READ_ONLY=false
 GIT_USER_NAME=MyNote
 GIT_USER_EMAIL=mynote@example.com
@@ -439,6 +441,58 @@ ssh -L 3100:127.0.0.1:3100 USER@SERVER_IP
 
 MyNote 自身不会验证用户身份，Cloudflare Access 或其他上游认证是生产部署的安全边界。
 
+## 博客模式
+
+博客模式可以把同一套 Markdown 仓库作为公开只读博客。在 `.env` 中配置：
+
+```dotenv
+MYNOTE_MODE=blog
+MYNOTE_APP_NAME=MyNote Blog
+MYNOTE_BLOG_DESCRIPTION=记录软件、工具和想法。
+```
+
+博客模式会自动启用全部只读保护，使用受保护的 `compose.demo.yml` 部署，隐藏编辑器和 Git 历史界面，并拒绝写入 API。文章仍然保存在 `notes/` 中：
+
+```md
+---
+title: 使用 Git 驱动博客
+description: 不使用数据库，通过 Git 发布 Markdown 文章。
+date: 2026-09-21
+updated: 2026-09-22
+tags: [Nuxt, Git, Markdown]
+cover: ./使用 Git 驱动博客.assets/cover.webp
+draft: false
+---
+
+# 使用 Git 驱动博客
+
+这里是文章正文。
+```
+
+支持的发布字段：
+
+| 字段 | 用途 |
+| --- | --- |
+| `title` | 文章标题；未填写时读取第一个一级标题 |
+| `description` | 文章列表摘要和页面描述 |
+| `date` | 发布日期和文章排序依据 |
+| `updated` | 可选的最后更新时间 |
+| `tags` | 用于筛选的文章标签 |
+| `cover` | 可选的绝对路径或笔记相对路径封面 |
+| `draft` | 设置为 `true` 时隐藏文章 |
+
+未来日期文章和草稿不会出现在列表、搜索或文章直达请求中。对于公开仓库，`draft: true` 只能从博客界面隐藏文章，不能让仓库中的源文件保密。
+
+在本地编辑器中发布：
+
+```bash
+git add notes
+git commit -m "Publish a new article"
+git push origin main
+```
+
+systemd 定时器会在约一分钟内拉取提交。仅修改文章时无需重新构建容器。
+
 ## 只读演示模式
 
 公开演示站应启用只读模式。在 `.env` 中设置：
@@ -477,6 +531,8 @@ docker compose -f compose.yml -f compose.demo.yml up -d --build
 | `MYNOTE_BIND_ADDRESS` | `127.0.0.1` | Docker 在宿主机监听的地址 |
 | `MYNOTE_PORT` | `3100` | Docker 在宿主机监听的端口 |
 | `MYNOTE_APP_NAME` | `MyNote` | 页面中显示的应用名称 |
+| `MYNOTE_MODE` | `notes` | 界面模式：`notes` 或 `blog`；博客模式始终只读 |
+| `MYNOTE_BLOG_DESCRIPTION` | `A Git-powered Markdown blog.` | 博客首页显示的介绍 |
 | `MYNOTE_READ_ONLY` | `false` | 设置为 `true` 时启用受保护的只读演示模式 |
 | `GIT_USER_NAME` | `MyNote` | 自动提交使用的 Git 用户名 |
 | `GIT_USER_EMAIL` | `mynote@localhost` | 自动提交使用的 Git 邮箱 |

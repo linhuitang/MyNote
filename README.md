@@ -248,6 +248,8 @@ Edit `.env`:
 MYNOTE_BIND_ADDRESS=127.0.0.1
 MYNOTE_PORT=3100
 MYNOTE_APP_NAME=MyNote
+MYNOTE_MODE=notes
+MYNOTE_BLOG_DESCRIPTION=A Git-powered Markdown blog.
 MYNOTE_READ_ONLY=false
 GIT_USER_NAME=MyNote
 GIT_USER_EMAIL=mynote@example.com
@@ -439,6 +441,58 @@ Recommended setup:
 
 MyNote does not authenticate users itself. Cloudflare Access or another upstream authentication system is the security boundary for production deployments.
 
+## Blog Mode
+
+Blog mode turns the same Markdown repository into a public, read-only blog. Configure `.env`:
+
+```dotenv
+MYNOTE_MODE=blog
+MYNOTE_APP_NAME=MyNote Blog
+MYNOTE_BLOG_DESCRIPTION=Writing about software, tools, and ideas.
+```
+
+Blog mode automatically enables all read-only protections, uses the protected `compose.demo.yml` deployment, hides editor and Git-history interfaces, and rejects mutation APIs. Articles continue to live in `notes/`:
+
+```md
+---
+title: Building a Git-powered Blog
+description: Publishing Markdown articles from Git without a database.
+date: 2026-09-21
+updated: 2026-09-22
+tags: [Nuxt, Git, Markdown]
+cover: ./Building a Git-powered Blog.assets/cover.webp
+draft: false
+---
+
+# Building a Git-powered Blog
+
+Article content goes here.
+```
+
+Supported publication fields:
+
+| Field | Purpose |
+| --- | --- |
+| `title` | Article title; falls back to the first level-one heading |
+| `description` | Article-list summary and page description |
+| `date` | Publication date and article sort order |
+| `updated` | Optional last-updated date |
+| `tags` | Article tags used for filtering |
+| `cover` | Optional absolute or note-relative cover image |
+| `draft` | Hides the article when `true` |
+
+Future-dated articles and drafts are excluded from lists, search, and direct article requests. In a public repository, `draft: true` does not make the source private; it only hides the article from the blog interface.
+
+Publish from a local editor:
+
+```bash
+git add notes
+git commit -m "Publish a new article"
+git push origin main
+```
+
+The systemd timer pulls the commit within about a minute. Note-only changes appear without rebuilding the container.
+
 ## Read-only Demo Mode
 
 Use read-only mode for a public demonstration site. Set the following value in `.env`:
@@ -477,6 +531,8 @@ docker compose -f compose.yml -f compose.demo.yml up -d --build
 | `MYNOTE_BIND_ADDRESS` | `127.0.0.1` | Host address used by Docker |
 | `MYNOTE_PORT` | `3100` | Host port used by Docker |
 | `MYNOTE_APP_NAME` | `MyNote` | Application name displayed in the UI |
+| `MYNOTE_MODE` | `notes` | Interface mode: `notes` or `blog`; blog mode is always read-only |
+| `MYNOTE_BLOG_DESCRIPTION` | `A Git-powered Markdown blog.` | Introduction displayed on the blog home page |
 | `MYNOTE_READ_ONLY` | `false` | Enables protected read-only demo mode when set to `true` |
 | `GIT_USER_NAME` | `MyNote` | Git author name for automatic commits |
 | `GIT_USER_EMAIL` | `mynote@localhost` | Git author email for automatic commits |

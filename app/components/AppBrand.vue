@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 const { t } = useI18n()
+const { isBlog } = useAppMode()
 </script>
 
 <template>
@@ -8,7 +9,7 @@ const { t } = useI18n()
     <img class="brand-mark" src="/mynote-logo.png" alt="">
     <span>
       <strong class="brand-name">{{ config.public.appName }}</strong>
-      <span class="brand-caption">{{ t('brand.caption') }}</span>
+      <span class="brand-caption">{{ isBlog ? config.public.blogDescription : t('brand.caption') }}</span>
     </span>
   </NuxtLink>
 </template>

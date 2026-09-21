@@ -1,5 +1,10 @@
 ---
+title: Project Ideas
+description: Use a Markdown note to collect ideas, decisions, and actionable project tasks.
+date: 2026-09-17
+updated: 2026-09-21
 tags: [Planning, Tasks]
+draft: false
 ---
 
 # Project Ideas
@@ -29,4 +34,3 @@ A lightweight planning note can combine ideas, decisions, and actionable tasks w
 ## Notes
 
 Search can find words in this body even when they do not appear in the title. Try searching for `milestone` from the home page.
-

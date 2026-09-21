@@ -31,6 +31,8 @@ if [ ! -f "$repository/.env" ]; then
 MYNOTE_BIND_ADDRESS=127.0.0.1
 MYNOTE_PORT=3100
 MYNOTE_APP_NAME=MyNote
+MYNOTE_MODE=notes
+MYNOTE_BLOG_DESCRIPTION=A Git-powered Markdown blog.
 MYNOTE_READ_ONLY=false
 GIT_USER_NAME=$git_name
 GIT_USER_EMAIL=$git_email
@@ -54,10 +56,15 @@ if ! grep -q '^GITHUB_DEPLOY_KEY_PATH=' "$repository/.env"; then
 fi
 
 read_only="$(sed -n 's/^MYNOTE_READ_ONLY=//p' "$repository/.env" | tail -n 1 | tr '[:upper:]' '[:lower:]')"
+app_mode="$(sed -n 's/^MYNOTE_MODE=//p' "$repository/.env" | tail -n 1 | tr '[:upper:]' '[:lower:]')"
+protected_mode=0
+if [ "$read_only" = "true" ] || [ "$read_only" = "1" ] || [ "$read_only" = "yes" ] || [ "$read_only" = "on" ] || [ "$app_mode" = "blog" ]; then
+  protected_mode=1
+fi
 
 echo "正在验证 Docker Compose 配置..."
 cd "$repository"
-if [ "$read_only" = "true" ] || [ "$read_only" = "1" ] || [ "$read_only" = "yes" ] || [ "$read_only" = "on" ]; then
+if [ "$protected_mode" -eq 1 ]; then
   docker compose -f compose.yml -f compose.demo.yml config >/dev/null
   echo "将以只读演示模式部署，不会向容器挂载 GitHub 私钥"
 else
@@ -70,7 +77,7 @@ else
 fi
 
 echo "正在构建并启动 MyNote..."
-if [ "$read_only" = "true" ] || [ "$read_only" = "1" ] || [ "$read_only" = "yes" ] || [ "$read_only" = "on" ]; then
+if [ "$protected_mode" -eq 1 ]; then
   docker compose -f compose.yml -f compose.demo.yml up -d --build --remove-orphans
 else
   docker compose -f compose.yml -f compose.github.yml up -d --build --remove-orphans

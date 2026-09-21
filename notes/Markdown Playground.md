@@ -1,5 +1,11 @@
 ---
+title: Markdown Playground
+description: Explore the rich Markdown elements supported by the MyNote editor and preview.
+date: 2026-09-20
+updated: 2026-09-21
 tags: [Markdown, Demo]
+cover: /mynote-logo.png
+draft: false
 ---
 
 # Markdown Playground
@@ -55,4 +61,3 @@ const note: Note = {
 ```
 
 Images pasted or dropped into the editor are saved in a dedicated `.assets` directory beside the note and referenced with a relative Markdown path.
-

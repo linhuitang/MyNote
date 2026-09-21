@@ -1,5 +1,10 @@
 ---
+title: Docker Deployment Checklist
+description: A practical checklist for deploying MyNote safely on a personal server.
+date: 2026-09-18
+updated: 2026-09-21
 tags: [Docker, Deployment]
+draft: false
 ---
 
 # Docker Deployment Checklist
@@ -37,4 +42,3 @@ MyNote does not include its own account system. Keep the application bound to `1
 - An authenticated reverse proxy
 
 > Never expose an unprotected MyNote port directly to the public internet.
-

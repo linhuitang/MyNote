@@ -1,5 +1,10 @@
 ---
+title: Welcome to MyNote
+description: Discover how MyNote combines portable Markdown files, a modern web editor, and Git history.
+date: 2026-09-21
+updated: 2026-09-21
 tags: [Welcome, Guide]
+draft: false
 ---
 
 # Welcome to MyNote
@@ -22,4 +27,3 @@ MyNote keeps your notes as ordinary Markdown files while giving you a clean brow
 5. Open this note's history after saving to see the new Git commit.
 
 > These notes contain demonstration content only. Replace or delete them when you are ready to use MyNote for your own writing.
-

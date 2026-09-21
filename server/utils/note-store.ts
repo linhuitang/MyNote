@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
 import type { NoteDocument, NoteSummary } from '~~/shared/types/note'
-import { tagsFromMarkdown } from '~~/shared/utils/markdown-metadata'
+import { metadataFromMarkdown } from '~~/shared/utils/markdown-metadata'
 
 let mutationQueue: Promise<void> = Promise.resolve()
 
@@ -38,8 +38,21 @@ export function revisionFor(content: string): string {
 }
 
 function titleFor(path: string, content: string): string {
+  const metadata = metadataFromMarkdown(content)
   const heading = content.match(/^\s*#\s+(.+)$/m)?.[1]?.trim()
-  return heading || basename(path, '.md')
+  return metadata.title || heading || basename(path, '.md')
+}
+
+function validDate(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
+}
+
+function isPublished(content: string, now = Date.now()): boolean {
+  const metadata = metadataFromMarkdown(content)
+  const publishedAt = validDate(metadata.date)
+  return !metadata.draft && (!publishedAt || new Date(publishedAt).getTime() <= now)
 }
 
 function excerptFor(content: string): string {
@@ -66,40 +79,48 @@ async function findMarkdownFiles(directory: string, root: string): Promise<strin
   return files.flat()
 }
 
-export async function listNotes(searchQuery = ''): Promise<NoteSummary[]> {
+export async function listNotes(searchQuery = '', options: { publishedOnly?: boolean } = {}): Promise<NoteSummary[]> {
   const root = getNotesRoot()
   await mkdir(root, { recursive: true })
   const paths = await findMarkdownFiles(root, root)
   const normalisedQuery = searchQuery.trim().toLocaleLowerCase()
 
-  const notes = await Promise.all(paths.map(async (path) => {
+  const notes = await Promise.all(paths.map(async (path): Promise<NoteSummary | null> => {
     const absolutePath = resolveNotePath(path)
     const [content, fileStat] = await Promise.all([
       readFile(absolutePath, 'utf8'),
       stat(absolutePath),
     ])
 
+    if (options.publishedOnly && !isPublished(content)) return null
+
     const title = titleFor(path, content)
     if (normalisedQuery && !`${title}\n${path}\n${content}`.toLocaleLowerCase().includes(normalisedQuery)) {
       return null
     }
 
+    const metadata = metadataFromMarkdown(content)
     return {
       path,
       title,
       excerpt: excerptFor(content),
-      tags: tagsFromMarkdown(content),
+      tags: metadata.tags,
       updatedAt: fileStat.mtime.toISOString(),
       revision: revisionFor(content),
+      description: metadata.description,
+      publishedAt: validDate(metadata.date),
+      contentUpdatedAt: validDate(metadata.updated),
+      cover: metadata.cover,
+      draft: metadata.draft,
     }
   }))
 
   return notes
     .filter((note): note is NoteSummary => note !== null)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .sort((a, b) => (b.publishedAt || b.updatedAt).localeCompare(a.publishedAt || a.updatedAt))
 }
 
-export async function readNote(pathInput: string): Promise<NoteDocument> {
+export async function readNote(pathInput: string, options: { publishedOnly?: boolean } = {}): Promise<NoteDocument> {
   const path = normaliseNotePath(pathInput)
   const absolutePath = resolveNotePath(path)
 
@@ -109,14 +130,25 @@ export async function readNote(pathInput: string): Promise<NoteDocument> {
       stat(absolutePath),
     ])
 
+    if (options.publishedOnly && !isPublished(content)) {
+      throw createError({ statusCode: 404, statusMessage: 'Post not found' })
+    }
+
+    const metadata = metadataFromMarkdown(content)
+
     return {
       path,
       title: titleFor(path, content),
       excerpt: excerptFor(content),
-      tags: tagsFromMarkdown(content),
+      tags: metadata.tags,
       updatedAt: fileStat.mtime.toISOString(),
       revision: revisionFor(content),
       content,
+      description: metadata.description,
+      publishedAt: validDate(metadata.date),
+      contentUpdatedAt: validDate(metadata.updated),
+      cover: metadata.cover,
+      draft: metadata.draft,
     }
   }
   catch (error: unknown) {

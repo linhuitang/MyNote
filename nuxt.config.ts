@@ -20,6 +20,8 @@ export default defineNuxtConfig({
     notesDirectory: './notes',
     public: {
       appName: 'MyNote',
+      appMode: 'notes',
+      blogDescription: 'A Git-powered Markdown blog.',
       readOnly: false,
     },
   },

@@ -8,6 +8,7 @@ const router = useRouter()
 const config = useRuntimeConfig()
 const { t, intlLocale } = useI18n()
 const readOnly = useReadOnly()
+const { isBlog } = useAppMode()
 const note = ref<NoteDocument | null>(null)
 const content = ref('')
 const savedContent = ref('')
@@ -36,10 +37,21 @@ const tags = computed(() => tagsFromMarkdown(content.value))
 
 const { data: noteHistory, status: historyStatus, refresh: refreshHistory } = await useFetch<NoteHistoryEntry[]>('/api/note-history', {
   default: () => [],
+  immediate: !isBlog.value,
   query: computed(() => ({ path: notePath.value })),
 })
 
-useHead(() => ({ title: `${title.value} · ${config.public.appName}` }))
+useHead(() => ({
+  title: `${title.value} · ${config.public.appName}`,
+  meta: isBlog.value
+    ? [
+        { name: 'description', content: note.value?.description || note.value?.excerpt || '' },
+        { property: 'og:title', content: title.value },
+        { property: 'og:description', content: note.value?.description || note.value?.excerpt || '' },
+        { property: 'og:type', content: 'article' },
+      ]
+    : [],
+}))
 
 async function loadNote(): Promise<void> {
   loading.value = true
@@ -190,6 +202,12 @@ function handleBeforeUnload(event: BeforeUnloadEvent): void {
 function formatHistoryDate(value: string): string {
   return new Intl.DateTimeFormat(intlLocale.value, {
     year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+  }).format(new Date(value))
+}
+
+function formatArticleDate(value: string): string {
+  return new Intl.DateTimeFormat(intlLocale.value, {
+    year: 'numeric', month: 'long', day: 'numeric',
   }).format(new Date(value))
 }
 
@@ -364,13 +382,14 @@ await loadNote()
 
 <template>
   <div class="detail-shell">
-    <header class="topbar detail-topbar">
+    <BlogHeader v-if="isBlog" />
+    <header v-else class="topbar detail-topbar">
       <div class="detail-navigation">
         <button class="back-button" :aria-label="t('editor.back')" @click="goBack">←</button>
         <AppBrand />
       </div>
       <div class="save-group">
-        <ReadOnlyBadge v-if="readOnly" />
+        <ReadOnlyBadge v-if="readOnly && !isBlog" />
         <LanguageSelector />
         <ThemeToggle />
         <template v-if="editing">
@@ -429,11 +448,21 @@ await loadNote()
         </div>
       </template>
       <section v-else class="reader-page">
-        <div v-if="tags.length" class="reader-tags" :aria-label="t('editor.noteTags')">
+        <div v-if="isBlog && note" class="blog-article-meta">
+          <NuxtLink to="/" class="blog-back-link">← {{ t('blog.backHome') }}</NuxtLink>
+          <div class="blog-article-dates">
+            <span>{{ t('blog.published', { date: formatArticleDate(note.publishedAt || note.updatedAt) }) }}</span>
+            <span v-if="note.contentUpdatedAt">{{ t('blog.updated', { date: formatArticleDate(note.contentUpdatedAt) }) }}</span>
+          </div>
+          <div v-if="tags.length" class="reader-tags blog-reader-tags" :aria-label="t('editor.noteTags')">
+            <span v-for="tag in tags" :key="tag" class="note-tag">{{ tag }}</span>
+          </div>
+        </div>
+        <div v-else-if="tags.length" class="reader-tags" :aria-label="t('editor.noteTags')">
           <span v-for="tag in tags" :key="tag" class="note-tag">{{ tag }}</span>
         </div>
-        <MarkdownPreview :content="content" :note-path="notePath" />
-        <section class="note-history-section">
+        <MarkdownPreview :content="content" :note-path="notePath" :class="{ 'blog-article-body': isBlog }" />
+        <section v-if="!isBlog" class="note-history-section">
           <div class="note-history-heading">
             <div>
               <h2>{{ t('editor.history') }}</h2>
