@@ -68,7 +68,7 @@ Open `http://localhost:3000` to explore the included sample notes, try search an
 | Separate reading and editing modes | YAML Frontmatter tags and tag filters |
 | Toolbar for common Markdown syntax | Infinite loading in batches of 12 notes |
 | Responsive desktop and mobile layouts | Delete confirmation and related-image cleanup |
-| English UI by default with a Chinese language switch | Language preference saved in the browser |
+| Language selector with English as the default | English and Simplified Chinese included; preference saved in the browser |
 | Light, dark, and system themes | External edit conflict detection |
 | File picker, screenshot paste, and drag-and-drop image upload | Standard relative Markdown image paths |
 
@@ -196,6 +196,16 @@ npm run typecheck  # Run TypeScript checks
 npm run build      # Create a production build
 npm run preview    # Preview the production build
 ```
+
+### Add Another Interface Language
+
+Language metadata and translations are registered in `app/composables/useI18n.ts`. To add a language:
+
+1. Add its code, native label, and short label to `appLocaleOptions`.
+2. Add a complete translation table for the new locale.
+3. Register that table in `messages`.
+
+The language menu reads the registry automatically. TypeScript requires every registered translation table to contain the same keys as English, so missing interface text is detected during `npm run typecheck`.
 
 ## Saving and Git Sync
 

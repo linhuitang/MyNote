@@ -97,7 +97,7 @@ await resetHistory()
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
-        <LanguageToggle />
+        <LanguageSelector />
         <ThemeToggle />
         <NuxtLink to="/" class="secondary-button header-action-button">{{ t('history.back') }}</NuxtLink>
       </div>

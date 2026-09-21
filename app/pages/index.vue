@@ -151,7 +151,7 @@ await resetNotes()
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
-        <LanguageToggle />
+        <LanguageSelector />
         <ThemeToggle />
         <NuxtLink to="/history" class="secondary-button header-action-button">{{ t('home.history') }}</NuxtLink>
         <button class="primary-button header-action-button" @click="newNoteDialogOpen = true">{{ t('home.newNote') }}</button>

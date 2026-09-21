@@ -1,12 +1,18 @@
-export type AppLocale = 'en' | 'zh-CN'
+export const appLocaleOptions = [
+  { code: 'en', label: 'English', shortLabel: 'EN' },
+  { code: 'zh-CN', label: '简体中文', shortLabel: '中' },
+] as const
+
+export type AppLocale = typeof appLocaleOptions[number]['code']
 
 const STORAGE_KEY = 'mynote-locale'
 
 const en = {
   'brand.home': 'Back to notes',
   'brand.caption': 'Markdown notes, kept in Git',
-  'language.switchTo': 'Switch to Chinese',
   'language.label': 'Language',
+  'language.current': 'Language: {language}',
+  'language.menu': 'Choose a language',
   'theme.label': 'Theme',
   'theme.light': 'Light',
   'theme.dark': 'Dark',
@@ -161,8 +167,9 @@ type TranslationTable = Record<TranslationKey, string>
 const zhCN: TranslationTable = {
   'brand.home': '返回笔记首页',
   'brand.caption': 'Markdown notes, kept in Git',
-  'language.switchTo': '切换到英文',
   'language.label': '语言',
+  'language.current': '语言：{language}',
+  'language.menu': '选择界面语言',
   'theme.label': '主题',
   'theme.light': '浅色',
   'theme.dark': '深色',
@@ -335,5 +342,5 @@ export function useI18n() {
     if (savedLocale === 'en' || savedLocale === 'zh-CN') locale.value = savedLocale
   }
 
-  return { locale, intlLocale, t, setLocale, initialiseLocale }
+  return { locale, locales: appLocaleOptions, intlLocale, t, setLocale, initialiseLocale }
 }

@@ -62,7 +62,7 @@ function lineType(line: string): string {
     <header class="topbar">
       <AppBrand />
       <div class="topbar-actions">
-        <LanguageToggle />
+        <LanguageSelector />
         <ThemeToggle />
         <NuxtLink to="/history" class="secondary-button header-action-button">{{ t('detail.back') }}</NuxtLink>
       </div>

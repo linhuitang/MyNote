@@ -364,7 +364,7 @@ await loadNote()
         <AppBrand />
       </div>
       <div class="save-group">
-        <LanguageToggle />
+        <LanguageSelector />
         <ThemeToggle />
         <template v-if="editing">
           <span v-if="statusMessage" class="sync-status" :data-tone="statusTone">{{ statusMessage }}</span>
