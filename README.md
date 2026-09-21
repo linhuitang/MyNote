@@ -17,6 +17,7 @@
 <p align="center">
   <a href="#quick-start">Quick Start</a> ·
   <a href="#features">Features</a> ·
+  <a href="#blog-mode">Blog Mode</a> ·
   <a href="#docker-deployment">Docker Deployment</a> ·
   <a href="#automatic-updates-with-systemd">Automatic Updates</a>
 </p>
@@ -27,6 +28,15 @@ Many note-taking apps keep your content in a proprietary database or cloud servi
 
 > **MyNote = Markdown files + web editor + Git history + self-hosting**
 
+### One repository, two modes
+
+| Mode | Best for | Editing | Public discovery |
+| --- | --- | --- | --- |
+| **Notes mode** | A private, self-hosted knowledge base | Browser editor or local Markdown editor | Disabled by default |
+| **Blog mode** | A public, Git-powered Markdown blog | Publish from a local editor and push to Git | SSR, archive, RSS, Sitemap, Open Graph, and structured data |
+
+Switch modes with one environment variable: `MYNOTE_MODE=notes` or `MYNOTE_MODE=blog`. Blog mode is always read-only in the browser, so a public site cannot modify the repository through MyNote.
+
 | Core benefit | What it gives you |
 | --- | --- |
 | 📄 **You own the files** | Every note is a plain `.md` file, with no proprietary format or database lock-in |
@@ -35,6 +45,7 @@ Many note-taking apps keep your content in a proprietary database or cloud servi
 | 🔄 **Transparent multi-device sync** | Push locally edited files to GitHub and let the server pull them, or push directly from the web app |
 | 🖼️ **More than plain text** | Tags, full-text search, image paste, drag-and-drop upload, and Markdown preview are built in |
 | 🏠 **Run it where you want** | Use it locally or deploy it to your own server with Docker |
+| 🌐 **Turn notes into a blog** | Publish the same Markdown format as an SSR blog with archives, feeds, and SEO metadata |
 
 ### How it differs from typical web note apps
 
@@ -56,6 +67,15 @@ npm run dev
 ```
 
 Open `http://localhost:3000` to explore the included sample notes, try search and tag filters, or create your own note. No database or schema initialization is required. The examples contain no private data and can be edited or deleted at any time.
+
+To preview the same repository as a read-only blog, create `.env` and restart the development server:
+
+```dotenv
+MYNOTE_MODE=blog
+MYNOTE_APP_NAME=MyNote Blog
+MYNOTE_BLOG_DESCRIPTION=Writing about software, tools, and ideas.
+MYNOTE_SITE_URL=http://localhost:3000
+```
 
 > [!TIP]
 > Replace `YOUR_USERNAME` with the actual GitHub account name. If you intend to store private notes, put MyNote in your own **private repository**. Public repositories and public forks are not suitable for private content.
@@ -443,16 +463,27 @@ MyNote does not authenticate users itself. Cloudflare Access or another upstream
 
 ## Blog Mode
 
-Blog mode turns the same Markdown repository into a public, read-only blog. Configure `.env`:
+Blog mode turns the same Markdown repository into a public, read-only blog. It is intended for publishing through Git: write locally, push to the remote repository, and let the server pull the new commit.
+
+### 1. Enable blog mode
+
+Configure `.env` on the server:
 
 ```dotenv
 MYNOTE_MODE=blog
 MYNOTE_APP_NAME=MyNote Blog
 MYNOTE_BLOG_DESCRIPTION=Writing about software, tools, and ideas.
 MYNOTE_SITE_URL=https://blog.example.com
+MYNOTE_READ_ONLY=true
 ```
 
-Blog mode automatically enables all read-only protections, uses the protected `compose.demo.yml` deployment, hides editor and Git-history interfaces, and rejects mutation APIs. Articles continue to live in `notes/`:
+`MYNOTE_READ_ONLY=true` makes the intent explicit, but blog mode enforces read-only behavior even if this value is omitted. The systemd installer automatically uses the protected `compose.demo.yml` deployment, does not mount the GitHub private key into the container, hides editor and Git-history interfaces, and rejects mutation APIs.
+
+Set `MYNOTE_SITE_URL` to the final public HTTPS origin without a trailing slash. It is used to generate canonical, Open Graph, RSS, Sitemap, and robots URLs.
+
+### 2. Write an article
+
+Create an ordinary Markdown file inside `notes/`:
 
 ```md
 ---
@@ -484,7 +515,9 @@ Supported publication fields:
 
 Future-dated articles and drafts are excluded from lists, search, and direct article requests. In a public repository, `draft: true` does not make the source private; it only hides the article from the blog interface.
 
-Publish from a local editor:
+### 3. Publish through Git
+
+Commit and push from a local editor:
 
 ```bash
 git add notes
@@ -493,6 +526,15 @@ git push origin main
 ```
 
 The systemd timer pulls the commit within about a minute. Note-only changes appear without rebuilding the container.
+
+To deploy blog mode for the first time, or to apply changed environment variables:
+
+```bash
+cd /opt/MyNote
+sudo ./deploy/install-systemd-sync.sh
+```
+
+### 4. Verify the public site
 
 Public blog features include:
 
@@ -504,7 +546,18 @@ Public blog features include:
 - a mode-aware `/robots.txt` that blocks indexing in notes mode;
 - server-side Markdown sanitization with DOMPurify.
 
-Set `MYNOTE_SITE_URL` to the final public HTTPS origin without a trailing slash. It is used to generate canonical, Open Graph, RSS, Sitemap, and robots URLs.
+After deployment, verify these URLs:
+
+```text
+https://blog.example.com/
+https://blog.example.com/archive
+https://blog.example.com/rss.xml
+https://blog.example.com/sitemap.xml
+https://blog.example.com/robots.txt
+```
+
+> [!IMPORTANT]
+> Blog mode makes published Markdown public. Do not keep private notes, credentials, private images, or secrets in a public blog repository—including old Git commits.
 
 ## Read-only Demo Mode
 
@@ -559,8 +612,8 @@ The container always uses:
 NUXT_NOTES_DIRECTORY=/repository/notes
 MYNOTE_REPOSITORY_DIRECTORY=/repository
 NITRO_PORT=3000
-NUXT_PUBLIC_APP_MODE=notes
-NUXT_PUBLIC_SITE_URL=
+NUXT_PUBLIC_APP_MODE=${MYNOTE_MODE}
+NUXT_PUBLIC_SITE_URL=${MYNOTE_SITE_URL}
 ```
 
 These container-internal variables normally do not need to be changed.

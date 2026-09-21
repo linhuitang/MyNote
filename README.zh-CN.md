@@ -17,6 +17,7 @@
 <p align="center">
   <a href="#快速体验">快速体验</a> ·
   <a href="#功能一览">功能一览</a> ·
+  <a href="#博客模式">博客模式</a> ·
   <a href="#docker-快速部署">Docker 部署</a> ·
   <a href="#systemd-自动拉取与部署">自动更新</a>
 </p>
@@ -27,6 +28,15 @@
 
 > **MyNote = Markdown 文件 + 网页编辑器 + Git 历史 + 自托管部署**
 
+### 一个仓库，两种使用模式
+
+| 模式 | 适用场景 | 编辑方式 | 公开访问能力 |
+| --- | --- | --- | --- |
+| **笔记模式** | 私有、自托管的个人知识库 | 网页编辑器或本地 Markdown 编辑器 | 默认禁止搜索引擎收录 |
+| **博客模式** | 公开、由 Git 驱动的 Markdown 博客 | 本地编写后通过 Git 发布 | SSR、归档、RSS、Sitemap、Open Graph 与结构化数据 |
+
+只需修改一个环境变量即可切换：`MYNOTE_MODE=notes` 或 `MYNOTE_MODE=blog`。博客模式在浏览器中始终只读，因此公开站点无法通过 MyNote 修改仓库。
+
 | 核心优势 | 你能得到什么 |
 | --- | --- |
 | 📄 **文件属于你** | 每篇笔记都是普通 `.md` 文件，不被数据库或私有格式锁定 |
@@ -35,6 +45,7 @@
 | 🔄 **多端同步简单透明** | 本地提交到 GitHub，服务器自动拉取；网页保存也能直接推送 |
 | 🖼️ **不只支持纯文字** | 标签、全文搜索、图片粘贴、拖拽上传和 Markdown 预览全部内置 |
 | 🏠 **运行位置由你决定** | 可以只在本机运行，也可以使用 Docker 部署到自己的服务器 |
+| 🌐 **笔记也能成为博客** | 同一套 Markdown 格式可发布成带归档、订阅与 SEO 元数据的 SSR 博客 |
 
 ### 和常见笔记方案有什么不同
 
@@ -56,6 +67,15 @@ npm run dev
 ```
 
 打开 `http://localhost:3000`，即可浏览内置示例笔记、体验搜索和标签筛选，或者新建自己的笔记。无需数据库，也无需初始化数据表。示例不包含私人数据，可以随时编辑或删除。
+
+如需在本地把同一仓库预览为只读博客，创建 `.env` 后重新启动开发服务：
+
+```dotenv
+MYNOTE_MODE=blog
+MYNOTE_APP_NAME=MyNote Blog
+MYNOTE_BLOG_DESCRIPTION=记录软件、工具和想法。
+MYNOTE_SITE_URL=http://localhost:3000
+```
 
 > [!TIP]
 > `YOUR_USERNAME` 需要替换为实际的 GitHub 用户名。准备保存私人笔记时，建议把项目放入你自己的 **Private 仓库**；公共仓库及公共 Fork 不适合存放私人内容。
@@ -443,16 +463,27 @@ MyNote 自身不会验证用户身份，Cloudflare Access 或其他上游认证�
 
 ## 博客模式
 
-博客模式可以把同一套 Markdown 仓库作为公开只读博客。在 `.env` 中配置：
+博客模式可以把同一套 Markdown 仓库作为公开只读博客。它采用 Git 发布流程：在本地编写文章、推送到远端仓库，再由服务器自动拉取新提交。
+
+### 1. 启用博客模式
+
+在服务器的 `.env` 中配置：
 
 ```dotenv
 MYNOTE_MODE=blog
 MYNOTE_APP_NAME=MyNote Blog
 MYNOTE_BLOG_DESCRIPTION=记录软件、工具和想法。
 MYNOTE_SITE_URL=https://blog.example.com
+MYNOTE_READ_ONLY=true
 ```
 
-博客模式会自动启用全部只读保护，使用受保护的 `compose.demo.yml` 部署，隐藏编辑器和 Git 历史界面，并拒绝写入 API。文章仍然保存在 `notes/` 中：
+`MYNOTE_READ_ONLY=true` 可以明确表达部署用途；即使省略该值，博客模式也会强制启用只读保护。systemd 安装器会自动使用受保护的 `compose.demo.yml` 部署，不把 GitHub 私钥挂载进容器，同时隐藏编辑器和 Git 历史界面并拒绝写入 API。
+
+请将 `MYNOTE_SITE_URL` 设置为最终的公开 HTTPS 地址，不要包含结尾斜杠。它用于生成 Canonical、Open Graph、RSS、Sitemap 和 robots 地址。
+
+### 2. 编写文章
+
+在 `notes/` 中创建普通 Markdown 文件：
 
 ```md
 ---
@@ -484,7 +515,9 @@ draft: false
 
 未来日期文章和草稿不会出现在列表、搜索或文章直达请求中。对于公开仓库，`draft: true` 只能从博客界面隐藏文章，不能让仓库中的源文件保密。
 
-在本地编辑器中发布：
+### 3. 通过 Git 发布
+
+在本地编辑器完成文章后提交并推送：
 
 ```bash
 git add notes
@@ -493,6 +526,15 @@ git push origin main
 ```
 
 systemd 定时器会在约一分钟内拉取提交。仅修改文章时无需重新构建容器。
+
+第一次部署博客模式，或者修改环境变量后，执行：
+
+```bash
+cd /opt/MyNote
+sudo ./deploy/install-systemd-sync.sh
+```
+
+### 4. 验证公开站点
 
 公开博客还提供：
 
@@ -504,7 +546,18 @@ systemd 定时器会在约一分钟内拉取提交。仅修改文章时无需重
 - 根据模式生成的 `/robots.txt`，笔记模式默认禁止索引；
 - 使用 DOMPurify 在服务端安全清理 Markdown HTML。
 
-请将 `MYNOTE_SITE_URL` 设置为最终的公开 HTTPS 地址，不要包含结尾斜杠。它用于生成 Canonical、Open Graph、RSS、Sitemap 和 robots 地址。
+部署完成后检查以下地址：
+
+```text
+https://blog.example.com/
+https://blog.example.com/archive
+https://blog.example.com/rss.xml
+https://blog.example.com/sitemap.xml
+https://blog.example.com/robots.txt
+```
+
+> [!IMPORTANT]
+> 博客模式会公开已发布的 Markdown。不要在公开博客仓库中保存私人笔记、账号凭据、私密图片或任何秘密，包括旧的 Git 提交历史。
 
 ## 只读演示模式
 
@@ -559,8 +612,8 @@ docker compose -f compose.yml -f compose.demo.yml up -d --build
 NUXT_NOTES_DIRECTORY=/repository/notes
 MYNOTE_REPOSITORY_DIRECTORY=/repository
 NITRO_PORT=3000
-NUXT_PUBLIC_APP_MODE=notes
-NUXT_PUBLIC_SITE_URL=
+NUXT_PUBLIC_APP_MODE=${MYNOTE_MODE}
+NUXT_PUBLIC_SITE_URL=${MYNOTE_SITE_URL}
 ```
 
 通常不需要修改这些容器内部变量。
